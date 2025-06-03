@@ -26,3 +26,5 @@ build/
 
 # Mac
 .DS_Store
+
+/include/secrets.h

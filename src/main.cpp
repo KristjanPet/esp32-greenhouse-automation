@@ -1,18 +1,49 @@
 #include <Arduino.h>
+#include <WiFi.h>
+#include <ArduinoOTA.h>
+#include "../include/secrets.h"
 
-// put function declarations here:
-int myFunction(int, int);
+void setupWiFi()
+{
+  Serial.print("Connecting to WiFi...");
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
-void setup() {
-  // put your setup code here, to run once:
-  int result = myFunction(2, 3);
+  while (WiFi.status() != WL_CONNECTED)
+  {
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println("\nWiFi connected!");
+  Serial.println("IP address: " + WiFi.localIP().toString());
 }
 
-void loop() {
-  // put your main code here, to run repeatedly:
+void setupOTA()
+{
+  ArduinoOTA
+      .onStart([]()
+               { Serial.println("Start OTA update"); })
+      .onEnd([]()
+             { Serial.println("\nEnd OTA"); })
+      .onProgress([](unsigned int progress, unsigned int total)
+                  { Serial.printf("Progress: %u%%\r", (progress / (total / 100))); })
+      .onError([](ota_error_t error)
+               { Serial.printf("Error[%u]: ", error); });
+
+  ArduinoOTA.begin();
+  Serial.println("OTA Ready");
 }
 
-// put function definitions here:
-int myFunction(int x, int y) {
-  return x + y;
+void setup()
+{
+  Serial.begin(115200);
+  delay(1000);
+
+  setupWiFi();
+  setupOTA();
+}
+
+void loop()
+{
+  ArduinoOTA.handle();
 }
