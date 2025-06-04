@@ -11,45 +11,87 @@ void handleRoot()
 {
     String html = R"rawliteral(
     <!DOCTYPE html>
-    <html>
+    <html lang="sl">
     <head>
       <meta name="viewport" content="width=device-width, initial-scale=1">
-      <title>Greenhouse Control</title>
+      <meta charset="UTF-8">
+      <title>Nadzor Rastlinjaka</title>
       <style>
-        body { font-family: sans-serif; background: #f5f5f5; padding: 20px; }
-        h1 { color: #333; }
-        .section { margin-bottom: 20px; padding: 15px; background: white; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        button { padding: 10px 20px; font-size: 16px; margin: 5px; }
-        input[type=number] { width: 80px; font-size: 16px; padding: 5px; }
+        body {
+          font-family: sans-serif;
+          background: #e0f7fa;
+          padding: 20px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+        h1 {
+          color: #006064;
+        }
+        .container {
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: center;
+          gap: 20px;
+          width: 100%;
+          max-width: 900px;
+        }
+        .section {
+          flex: 1 1 250px;
+          background: white;
+          border-radius: 10px;
+          padding: 15px;
+          box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        button {
+          padding: 10px 20px;
+          font-size: 16px;
+          margin: 5px;
+          background: #0097a7;
+          color: white;
+          border: none;
+          border-radius: 5px;
+        }
+        input[type=number] {
+          width: 80px;
+          font-size: 16px;
+          padding: 5px;
+        }
+        label {
+          display: inline-block;
+          margin: 10px 5px;
+        }
       </style>
     </head>
     <body>
-      <h1>Greenhouse Control Panel</h1>
+      <h1>Nadzorna plošča rastlinjaka</h1>
 
-      <div class="section">
-        <h2>Status</h2>
-        <p><strong>Wind Speed:</strong> 3.7 m/s</p>
-        <p><strong>Temperature Sensor 1:</strong> 23.4 &deg;C</p>
-        <p><strong>Temperature Sensor 2:</strong> 24.1 &deg;C</p>
-        <p><strong>Average Temperature:</strong> 23.8 &deg;C</p>
-      </div>
+      <div class="container">
+        <div class="section">
+          <h2>Status</h2>
+          <p><strong>Hitrost vetra:</strong> 3.7 m/s</p>
+          <p><strong>Temperatura senzor 1:</strong> 23.4 &deg;C</p>
+          <p><strong>Temperatura senzor 2:</strong> 24.1 &deg;C</p>
+          <p><strong>Povprečna temperatura:</strong> 23.8 &deg;C</p>
+        </div>
 
-      <div class="section">
-        <h2>Manual Motor Control</h2>
-        <button onclick="alert('Motor UP')">Up</button>
-        <button onclick="alert('Motor DOWN')">Down</button>
-      </div>
+        <div class="section">
+          <h2>Ročni nadzor motorjev</h2>
+          <button onclick="alert('Motor GOR')">Gor</button>
+          <button onclick="alert('Motor DOL')">Dol</button>
+        </div>
 
-      <div class="section">
-        <h2>Threshold Settings</h2>
-        <p>
-          <label>Temp Open: <input type="number" value="25"></label>
-          <label>Temp Close: <input type="number" value="18"></label>
-        </p>
-        <p>
-          <label>Wind Close: <input type="number" value="10"></label>
-          <label>Wind Reopen: <input type="number" value="6"></label>
-        </p>
+        <div class="section">
+          <h2>Nastavitve pragov</h2>
+          <p>
+            <label>Temp odpri: <input type="number" value="25"></label>
+            <label>Temp zapri: <input type="number" value="18"></label>
+          </p>
+          <p>
+            <label>Veter zapri: <input type="number" value="10"></label>
+            <label>Veter ponovno odpri: <input type="number" value="6"></label>
+          </p>
+        </div>
       </div>
     </body>
     </html>
