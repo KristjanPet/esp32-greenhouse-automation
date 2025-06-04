@@ -2,6 +2,7 @@
 #include <WiFi.h>
 #include <ArduinoOTA.h>
 #include "../include/secrets.h"
+#include "web_server.h"
 
 void setupWiFi()
 {
@@ -41,9 +42,11 @@ void setup()
 
   setupWiFi();
   setupOTA();
+  setupWebServer();
 }
 
 void loop()
 {
   ArduinoOTA.handle();
+  handleWebServer();
 }
