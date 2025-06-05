@@ -3,6 +3,7 @@
 #include <ArduinoOTA.h>
 #include "../include/secrets.h"
 #include "web_server.h"
+#include "temp_sensor.h"
 
 void setupWiFi()
 {
@@ -43,10 +44,14 @@ void setup()
   setupWiFi();
   setupOTA();
   setupWebServer();
+  setupTempSensor();
 }
 
 void loop()
 {
   ArduinoOTA.handle();
   handleWebServer();
+  Serial.print("Temp1: ");
+  Serial.print(getTemperatureC());
+  Serial.println(" °C");
 }
