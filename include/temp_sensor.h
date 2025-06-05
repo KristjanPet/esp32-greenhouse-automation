@@ -3,5 +3,6 @@
 
 void setupTempSensor();
 float getTemperatureC();
+float getHumidity();
 
 #endif

@@ -5,6 +5,9 @@
 #include "web_server.h"
 #include "temp_sensor.h"
 
+unsigned long lastPrintTime = 0;
+const unsigned long printInterval = 5000; // 5 seconds
+
 void setupWiFi()
 {
   Serial.print("Connecting to WiFi...");
@@ -49,9 +52,19 @@ void setup()
 
 void loop()
 {
+  unsigned long currentMillis = millis();
+
   ArduinoOTA.handle();
   handleWebServer();
-  Serial.print("Temp1: ");
-  Serial.print(getTemperatureC());
-  Serial.println(" °C");
+
+  if (currentMillis - lastPrintTime >= printInterval)
+  {
+    lastPrintTime = currentMillis;
+
+    Serial.print("Temp1: ");
+    Serial.print(getTemperatureC());
+    Serial.print(" °C | Humidity: ");
+    Serial.print(getHumidity());
+    Serial.println(" %");
+  }
 }
