@@ -3,6 +3,11 @@
 #include <ArduinoOTA.h>
 #include "../include/secrets.h"
 #include "web_server.h"
+#include "temp_sensor.h"
+#include "temp_sensor_2.h"
+
+unsigned long lastPrintTime = 0;
+const unsigned long printInterval = 5000; // 5 seconds
 
 void setupWiFi()
 {
@@ -43,10 +48,34 @@ void setup()
   setupWiFi();
   setupOTA();
   setupWebServer();
+  setupTempSensor();
+  setupTempSensor2();
 }
 
 void loop()
 {
+  unsigned long currentMillis = millis();
+
   ArduinoOTA.handle();
   handleWebServer();
+
+  if (currentMillis - lastPrintTime >= printInterval)
+  {
+    lastPrintTime = currentMillis;
+
+    float temp1 = getTemperatureC();
+    float temp2 = getTemperature2C();
+    float avgTemp = (temp1 + temp2) / 2.0;
+
+    Serial.print("Temp1: ");
+    Serial.print(temp1);
+    Serial.print(" °C | Temp2: ");
+    Serial.print(temp2);
+    Serial.print(" °C | Avg: ");
+    Serial.print(avgTemp);
+    Serial.print(" °C | Humidity: ");
+    Serial.print(getHumidity());
+    Serial.println(" %");
+
+  }
 }
