@@ -4,6 +4,7 @@
 #include "../include/secrets.h"
 #include "web_server.h"
 #include "temp_sensor.h"
+#include "temp_sensor_2.h"
 
 unsigned long lastPrintTime = 0;
 const unsigned long printInterval = 5000; // 5 seconds
@@ -48,6 +49,7 @@ void setup()
   setupOTA();
   setupWebServer();
   setupTempSensor();
+  setupTempSensor2();
 }
 
 void loop()
@@ -63,6 +65,8 @@ void loop()
 
     Serial.print("Temp1: ");
     Serial.print(getTemperatureC());
+    Serial.print(" °C | Temp2: ");
+    Serial.print(getTemperature2C());
     Serial.print(" °C | Humidity: ");
     Serial.print(getHumidity());
     Serial.println(" %");
