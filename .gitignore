@@ -2,7 +2,7 @@
 *.elf
 *.bin
 *.hex
-*.ini
+#*.ini
 *.bak
 *.tmp
 
