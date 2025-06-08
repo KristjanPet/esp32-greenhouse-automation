@@ -63,12 +63,19 @@ void loop()
   {
     lastPrintTime = currentMillis;
 
+    float temp1 = getTemperatureC();
+    float temp2 = getTemperature2C();
+    float avgTemp = (temp1 + temp2) / 2.0;
+
     Serial.print("Temp1: ");
-    Serial.print(getTemperatureC());
+    Serial.print(temp1);
     Serial.print(" °C | Temp2: ");
-    Serial.print(getTemperature2C());
+    Serial.print(temp2);
+    Serial.print(" °C | Avg: ");
+    Serial.print(avgTemp);
     Serial.print(" °C | Humidity: ");
     Serial.print(getHumidity());
     Serial.println(" %");
+
   }
 }
