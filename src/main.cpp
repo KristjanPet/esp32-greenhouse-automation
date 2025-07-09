@@ -5,6 +5,7 @@
 #include "web_server.h"
 #include "temp_sensor.h"
 #include "temp_sensor_2.h"
+
 #include "wind_sensor.h"
 
 unsigned long lastPrintTime = 0;
@@ -52,7 +53,6 @@ void setup()
   setupTempSensor();
   setupTempSensor2();
   setupWindSensor();
-}
 
 void loop()
 {
@@ -68,6 +68,7 @@ void loop()
     float temp1 = getTemperatureC();
     float temp2 = getTemperature2C();
     float avgTemp = (temp1 + temp2) / 2.0;
+
 
     // Serial.print("Temp1: ");
     // Serial.print(temp1);
