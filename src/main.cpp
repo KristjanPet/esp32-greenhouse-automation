@@ -6,8 +6,10 @@
 #include "temp_sensor.h"
 #include "temp_sensor_2.h"
 
+#include "wind_sensor.h"
+
 unsigned long lastPrintTime = 0;
-const unsigned long printInterval = 5000; // 5 seconds
+const unsigned long printInterval = 1000; // 5 seconds
 
 void setupWiFi()
 {
@@ -50,7 +52,7 @@ void setup()
   setupWebServer();
   setupTempSensor();
   setupTempSensor2();
-}
+  setupWindSensor();
 
 void loop()
 {
@@ -67,15 +69,18 @@ void loop()
     float temp2 = getTemperature2C();
     float avgTemp = (temp1 + temp2) / 2.0;
 
-    Serial.print("Temp1: ");
-    Serial.print(temp1);
-    Serial.print(" °C | Temp2: ");
-    Serial.print(temp2);
-    Serial.print(" °C | Avg: ");
-    Serial.print(avgTemp);
-    Serial.print(" °C | Humidity: ");
-    Serial.print(getHumidity());
-    Serial.println(" %");
 
+    // Serial.print("Temp1: ");
+    // Serial.print(temp1);
+    // Serial.print(" °C | Temp2: ");
+    // Serial.print(temp2);
+    // Serial.print(" °C | Avg: ");
+    // Serial.print(avgTemp);
+    // Serial.print(" °C | Humidity: ");
+    // Serial.print(getHumidity());
+    Serial.println(" %");
+    Serial.print("Wind Speed: ");
+    Serial.print(getWindSpeed());
+    Serial.println(" m/s");
   }
 }
