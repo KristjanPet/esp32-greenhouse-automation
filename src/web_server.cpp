@@ -1,5 +1,8 @@
 #include <WiFi.h>
 #include <WebServer.h>
+#include "temp_sensor.h"
+#include "temp_sensor_2.h"
+#include "wind_sensor.h"
 
 WebServer server(80);
 
@@ -102,9 +105,32 @@ void handleRoot()
 
 void setupWebServer()
 {
-    server.on("/", handleRoot);
-    server.begin();
-    Serial.println("Web server started");
+void setupWebServer()
+{
+  server.on("/", []() {
+    server.send(200, "text/html", "<h1>Greenhouse ESP32 says hi</h1>");
+  });
+
+  server.on("/api/sensors", []() {
+    float t1 = getTemperatureC();
+    float t2 = getTemperature2C();
+    float avg = (t1 + t2) / 2.0;
+    float hum = getHumidity();
+    float wind = getWindSpeed();
+
+    String json = "{";
+    json += "\"temp1\":" + String(t1, 1) + ",";
+    json += "\"temp2\":" + String(t2, 1) + ",";
+    json += "\"avg\":"   + String(avg, 1) + ",";
+    json += "\"humidity\":" + String(hum, 1) + ",";
+    json += "\"wind\":" + String(wind, 1);
+    json += "}";
+
+    server.send(200, "application/json", json);
+  });
+
+  server.begin();
+  Serial.println("Web server started on port 80");
 }
 
 void handleWebServer()

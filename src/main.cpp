@@ -53,6 +53,7 @@ void setup()
   setupTempSensor();
   setupTempSensor2();
   setupWindSensor();
+}
 
 void loop()
 {
@@ -70,14 +71,14 @@ void loop()
     float avgTemp = (temp1 + temp2) / 2.0;
 
 
-    // Serial.print("Temp1: ");
-    // Serial.print(temp1);
-    // Serial.print(" °C | Temp2: ");
-    // Serial.print(temp2);
-    // Serial.print(" °C | Avg: ");
-    // Serial.print(avgTemp);
-    // Serial.print(" °C | Humidity: ");
-    // Serial.print(getHumidity());
+    Serial.print("Temp1: ");
+    Serial.print(temp1);
+    Serial.print(" °C | Temp2: ");
+    Serial.print(temp2);
+    Serial.print(" °C | Avg: ");
+    Serial.print(avgTemp);
+    Serial.print(" °C | Humidity: ");
+    Serial.print(getHumidity());
     Serial.println(" %");
     Serial.print("Wind Speed: ");
     Serial.print(getWindSpeed());
