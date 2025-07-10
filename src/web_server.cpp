@@ -72,10 +72,11 @@ void handleRoot()
       <div class="container">
         <div class="section">
           <h2>Status</h2>
-          <p><strong>Hitrost vetra:</strong> 3.7 m/s</p>
-          <p><strong>Temperatura senzor 1:</strong> 23.4 &deg;C</p>
-          <p><strong>Temperatura senzor 2:</strong> 24.1 &deg;C</p>
-          <p><strong>Povprečna temperatura:</strong> 23.8 &deg;C</p>
+          <p><strong>Hitrost vetra:</strong> <span id="wind">--</span> m/s</p>
+          <p><strong>Temperatura senzor 1:</strong> <span id="temp1">--</span> &deg;C</p>
+          <p><strong>Temperatura senzor 2:</strong> <span id="temp2">--</span> &deg;C</p>
+          <p><strong>Povprečna temperatura:</strong> <span id="avg">--</span> &deg;C</p>
+          <p><strong>Vlaga:</strong> <span id="humidity">--</span> &deg;C</p>
         </div>
 
         <div class="section">
@@ -96,6 +97,25 @@ void handleRoot()
           </p>
         </div>
       </div>
+
+            <script>
+        async function updateData() {
+          try {
+            const res = await fetch('/api/sensors');
+            const data = await res.json();
+            document.getElementById('temp1').textContent = data.temp1;
+            document.getElementById('temp2').textContent = data.temp2;
+            document.getElementById('avg').textContent = data.avg;
+            document.getElementById('humidity').textContent = data.humidity;
+            document.getElementById('wind').textContent = data.wind;
+          } catch (e) {
+            console.error("Ni mogoče naložiti podatkov:", e);
+          }
+        }
+
+        setInterval(updateData, 500);
+        updateData();
+      </script>
     </body>
     </html>
   )rawliteral";
@@ -105,11 +125,7 @@ void handleRoot()
 
 void setupWebServer()
 {
-void setupWebServer()
-{
-  server.on("/", []() {
-    server.send(200, "text/html", "<h1>Greenhouse ESP32 says hi</h1>");
-  });
+  server.on("/", handleRoot);
 
   server.on("/api/sensors", []() {
     float t1 = getTemperatureC();
