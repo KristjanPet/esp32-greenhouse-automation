@@ -7,6 +7,7 @@
 #include "temp_sensor_2.h"
 
 #include "wind_sensor.h"
+#include <SPIFFS.h>
 
 unsigned long lastPrintTime = 0;
 const unsigned long printInterval = 1000; // 5 seconds
@@ -49,6 +50,10 @@ void setup()
 
   setupWiFi();
   setupOTA();
+  if (!SPIFFS.begin(true)) {
+  Serial.println("SPIFFS mount failed.");
+  return;
+  }
   setupWebServer();
   setupTempSensor();
   setupTempSensor2();
