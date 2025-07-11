@@ -14,3 +14,14 @@ async function updateData() {
 
 setInterval(updateData, 500);
 updateData();
+
+function sendMotorCommand(direction) {
+  fetch('/api/motor', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ direction })
+  })
+  .then(res => res.text())
+  .then(response => console.log(response))
+  .catch(err => console.error('Error sending motor command:', err));
+}

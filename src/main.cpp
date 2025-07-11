@@ -12,6 +12,9 @@
 unsigned long lastPrintTime = 0;
 const unsigned long printInterval = 1000; // 5 seconds
 
+const int MOTOR_UP_PIN = 14;
+const int MOTOR_DOWN_PIN = 27;
+
 void setupWiFi()
 {
   Serial.print("Connecting to WiFi...");
@@ -43,6 +46,13 @@ void setupOTA()
   Serial.println("OTA Ready");
 }
 
+void setupPins(){
+  pinMode(MOTOR_UP_PIN, OUTPUT);
+  pinMode(MOTOR_DOWN_PIN, OUTPUT);
+  digitalWrite(MOTOR_UP_PIN, LOW);
+  digitalWrite(MOTOR_DOWN_PIN, LOW);
+}
+
 void setup()
 {
   Serial.begin(115200);
@@ -58,6 +68,7 @@ void setup()
   setupTempSensor();
   setupTempSensor2();
   setupWindSensor();
+  setupPins();
 }
 
 void loop()
@@ -76,17 +87,17 @@ void loop()
     float avgTemp = (temp1 + temp2) / 2.0;
 
 
-    Serial.print("Temp1: ");
-    Serial.print(temp1);
-    Serial.print(" °C | Temp2: ");
-    Serial.print(temp2);
-    Serial.print(" °C | Avg: ");
-    Serial.print(avgTemp);
-    Serial.print(" °C | Humidity: ");
-    Serial.print(getHumidity());
-    Serial.println(" %");
-    Serial.print("Wind Speed: ");
-    Serial.print(getWindSpeed());
-    Serial.println(" m/s");
+    // Serial.print("Temp1: ");
+    // Serial.print(temp1);
+    // Serial.print(" °C | Temp2: ");
+    // Serial.print(temp2);
+    // Serial.print(" °C | Avg: ");
+    // Serial.print(avgTemp);
+    // Serial.print(" °C | Humidity: ");
+    // Serial.print(getHumidity());
+    // Serial.println(" %");
+    // Serial.print("Wind Speed: ");
+    // Serial.print(getWindSpeed());
+    // Serial.println(" m/s");
   }
 }

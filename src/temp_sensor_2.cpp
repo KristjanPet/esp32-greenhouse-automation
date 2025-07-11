@@ -16,8 +16,8 @@ void setupTempSensor2() {
 
 float getTemperature2C() {
   sensors.requestTemperatures();
-  Serial.print("Found DS18B20 sensors: ");
-    Serial.println(sensors.getDeviceCount());
+  // Serial.print("Found DS18B20 sensors: ");
+  //   Serial.println(sensors.getDeviceCount());
 
   float t = sensors.getTempCByIndex(0);  // Assume one sensor
   if (t == DEVICE_DISCONNECTED_C) {

@@ -3,6 +3,7 @@
 #include "temp_sensor.h"
 #include "temp_sensor_2.h"
 #include "wind_sensor.h"
+#include "motor_control.h"
 #include <SPIFFS.h>
 
 WebServer server(80);
@@ -53,6 +54,33 @@ void setupWebServer()
 
     server.send(200, "application/json", json);
   });
+
+  server.on("/api/motor", HTTP_POST, []() {
+    String body = server.arg("plain");
+
+    if (body.indexOf("up") != -1) {
+      Serial.println("Motor UP command received");
+      if (isMotorDownActive()) {
+        motorStop();
+        Serial.println("Motor stopped");
+      } else {
+        motorGoUp();
+        Serial.println("Motor going UP");
+      }
+    } else if (body.indexOf("down") != -1) {
+      Serial.println("Motor DOWN command received");
+      if (isMotorUpActive()) {
+        motorStop();
+        Serial.println("Motor stopped");
+      } else {
+        motorGoDown();
+        Serial.println("Motor going DOWN");
+      }
+    }
+
+    server.send(200, "text/plain", "Command received");
+  });
+
 
   server.begin();
   Serial.println("Web server started on port 80");
