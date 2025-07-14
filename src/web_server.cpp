@@ -4,6 +4,8 @@
 #include "temp_sensor_2.h"
 #include "wind_sensor.h"
 #include "motor_control.h"
+#include "thresholds.h"
+#include <ArduinoJson.h>
 #include <SPIFFS.h>
 
 WebServer server(80);
@@ -79,6 +81,30 @@ void setupWebServer()
     }
 
     server.send(200, "text/plain", "Command received");
+  });
+
+  server.on("/api/thresholds", HTTP_POST, []() {
+    String body = server.arg("plain");
+
+    DynamicJsonDocument doc(256);
+    DeserializationError error = deserializeJson(doc, body);
+
+    if (error) {
+      server.send(400, "text/plain", "Invalid JSON");
+      return;
+    }
+
+    currentThresholds.tempOpen = doc["tempOpen"] | currentThresholds.tempOpen;
+    currentThresholds.tempClose = doc["tempClose"] | currentThresholds.tempClose;
+    currentThresholds.windClose = doc["windClose"] | currentThresholds.windClose;
+    currentThresholds.windReopen = doc["windReopen"] | currentThresholds.windReopen;
+
+    currentThresholds.useTempOpen = doc["useTempOpen"] | currentThresholds.useTempOpen;
+    currentThresholds.useTempClose = doc["useTempClose"] | currentThresholds.useTempClose;
+    currentThresholds.useWindClose = doc["useWindClose"] | currentThresholds.useWindClose;
+    currentThresholds.useWindReopen = doc["useWindReopen"] | currentThresholds.useWindReopen;
+
+    server.send(200, "text/plain", "Thresholds updated");
   });
 
 

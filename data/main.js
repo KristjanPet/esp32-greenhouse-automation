@@ -25,3 +25,31 @@ function sendMotorCommand(direction) {
   .then(response => console.log(response))
   .catch(err => console.error('Error sending motor command:', err));
 }
+
+function sendThresholds() {
+  const data = {
+    tempOpen: parseFloat(document.getElementById("tempOpen").value),
+    tempClose: parseFloat(document.getElementById("tempClose").value),
+    windClose: parseFloat(document.getElementById("windClose").value),
+    windReopen: parseFloat(document.getElementById("windReopen").value),
+
+    useTempOpen: document.getElementById("useTempOpen").checked,
+    useTempClose: document.getElementById("useTempClose").checked,
+    useWindClose: document.getElementById("useWindClose").checked,
+    useWindReopen: document.getElementById("useWindReopen").checked,
+  };
+
+  fetch('/api/thresholds', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(data)
+  }).then(res => {
+    if (!res.ok) throw new Error("Ni mogoče poslati pragov");
+    alert("Pragi shranjeni!");
+  }).catch(err => {
+    console.error(err);
+    alert("Napaka pri pošiljanju pragov");
+  });
+}
