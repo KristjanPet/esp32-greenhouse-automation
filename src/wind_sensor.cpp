@@ -3,6 +3,11 @@
 
 #define WIND_SENSOR_PIN 34  // ADC1 channel
 
+const int WIND_BUFFER_SIZE = 120; // 1 minutes at 500ms intervals
+float windBuffer[WIND_BUFFER_SIZE];
+int windIndex = 0;
+int windCount = 0;
+
 void setupWindSensor() {
   pinMode(WIND_SENSOR_PIN, INPUT);
 }
@@ -17,4 +22,18 @@ float getWindSpeed() {
   float windSpeed = (originalVoltage / 5.0) * 30.0;
 
   return windSpeed;
+}
+
+void updateWindSpeedBuffer(float speed) {
+  windBuffer[windIndex] = speed;
+  windIndex = (windIndex + 1) % WIND_BUFFER_SIZE;
+  if (windCount < WIND_BUFFER_SIZE) windCount++;
+}
+
+float getAverageWindSpeed() {
+  float sum = 0;
+  for (int i = 0; i < windCount; i++) {
+    sum += windBuffer[i];
+  }
+  return windCount > 0 ? sum / windCount : 0;
 }

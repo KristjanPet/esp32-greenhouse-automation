@@ -89,7 +89,8 @@ void loop()
     float temp1 = getTemperatureC();
     float temp2 = getTemperature2C();
     float avgTemp = (temp1 + temp2) / 2.0;
-    float windSpeed = getWindSpeed();
+    updateWindSpeedBuffer(getWindSpeed());
+    float windSpeed = getAverageWindSpeed();
 
     handleAutoControl(avgTemp, windSpeed);
   }

@@ -39,7 +39,7 @@ void setupWebServer()
     float t2 = getTemperature2C();
     float avg = (t1 + t2) / 2.0;
     float hum = getHumidity();
-    float wind = getWindSpeed();
+    float wind = getAverageWindSpeed();
 
     String json = "{";
     json += "\"temp1\":" + String(t1, 1) + ",";
