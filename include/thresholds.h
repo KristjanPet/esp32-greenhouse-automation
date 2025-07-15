@@ -1,3 +1,6 @@
+#ifndef THRESHOLDS_H
+#define THRESHOLDS_H
+
 struct Thresholds {
   float tempOpen = 25.0;
   float tempClose = 18.0;
@@ -10,4 +13,10 @@ struct Thresholds {
   bool useWindReopen = true;
 };
 
-Thresholds currentThresholds;
+// Declare the global variable
+extern Thresholds currentThresholds;
+
+bool saveThresholds();
+bool loadThresholds();
+
+#endif

@@ -5,9 +5,10 @@
 #include "web_server.h"
 #include "temp_sensor.h"
 #include "temp_sensor_2.h"
-
+#include "thresholds.h"
 #include "wind_sensor.h"
 #include <SPIFFS.h>
+#include "automation_logic.h"
 
 unsigned long lastPrintTime = 0;
 const unsigned long printInterval = 1000; // 5 seconds
@@ -61,9 +62,10 @@ void setup()
   setupWiFi();
   setupOTA();
   if (!SPIFFS.begin(true)) {
-  Serial.println("SPIFFS mount failed.");
-  return;
+    Serial.println("SPIFFS mount failed.");
+    return;
   }
+  loadThresholds();
   setupWebServer();
   setupTempSensor();
   setupTempSensor2();
@@ -85,7 +87,9 @@ void loop()
     float temp1 = getTemperatureC();
     float temp2 = getTemperature2C();
     float avgTemp = (temp1 + temp2) / 2.0;
+    float windSpeed = getWindSpeed();
 
+    handleAutoControl(avgTemp, windSpeed);
 
     // Serial.print("Temp1: ");
     // Serial.print(temp1);

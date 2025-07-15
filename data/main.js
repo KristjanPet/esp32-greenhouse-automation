@@ -53,3 +53,20 @@ function sendThresholds() {
     alert("Napaka pri pošiljanju pragov");
   });
 }
+
+function loadThresholds() {
+  fetch('/api/thresholds')
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById("tempOpen").value = data.tempOpen;
+      document.getElementById("tempClose").value = data.tempClose;
+      document.getElementById("windClose").value = data.windClose;
+      document.getElementById("windReopen").value = data.windReopen;
+
+      document.getElementById("useTempOpen").checked = data.useTempOpen;
+      document.getElementById("useTempClose").checked = data.useTempClose;
+      document.getElementById("useWindClose").checked = data.useWindClose;
+      document.getElementById("useWindReopen").checked = data.useWindReopen;
+    })
+    .catch(err => console.error('Error loading thresholds:', err));
+}

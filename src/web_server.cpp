@@ -10,11 +10,6 @@
 
 WebServer server(80);
 
-// Dummy values for testing (replace later with real readings)
-float mockTemperature = 23.4;
-float mockWindSpeed = 3.7;
-
-
 void setupWebServer()
 {
   server.on("/", []() {
@@ -104,9 +99,28 @@ void setupWebServer()
     currentThresholds.useWindClose = doc["useWindClose"] | currentThresholds.useWindClose;
     currentThresholds.useWindReopen = doc["useWindReopen"] | currentThresholds.useWindReopen;
 
+    Serial.println("Thresholds updated");
+    saveThresholds();
+
     server.send(200, "text/plain", "Thresholds updated");
   });
 
+  server.on("/api/thresholds", HTTP_GET, []() {
+    DynamicJsonDocument doc(256);
+    doc["tempOpen"] = currentThresholds.tempOpen;
+    doc["tempClose"] = currentThresholds.tempClose;
+    doc["windClose"] = currentThresholds.windClose;
+    doc["windReopen"] = currentThresholds.windReopen;
+
+    doc["useTempOpen"] = currentThresholds.useTempOpen;
+    doc["useTempClose"] = currentThresholds.useTempClose;
+    doc["useWindClose"] = currentThresholds.useWindClose;
+    doc["useWindReopen"] = currentThresholds.useWindReopen;
+
+    String response;
+    serializeJson(doc, response);
+    server.send(200, "application/json", response);
+  });
 
   server.begin();
   Serial.println("Web server started on port 80");
