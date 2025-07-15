@@ -56,22 +56,20 @@ void setupWebServer()
     String body = server.arg("plain");
 
     if (body.indexOf("up") != -1) {
-      Serial.println("Motor UP command received");
       if (isMotorDownActive()) {
         motorStop();
-        Serial.println("Motor stopped");
+        motorState = STOPPED;
       } else {
         motorGoUp();
-        Serial.println("Motor going UP");
+        motorState = OPENING;
       }
     } else if (body.indexOf("down") != -1) {
-      Serial.println("Motor DOWN command received");
       if (isMotorUpActive()) {
         motorStop();
-        Serial.println("Motor stopped");
+        motorState = STOPPED;
       } else {
         motorGoDown();
-        Serial.println("Motor going DOWN");
+        motorState = CLOSING;
       }
     }
 

@@ -1,17 +1,18 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <ArduinoOTA.h>
+#include <SPIFFS.h>
 #include "../include/secrets.h"
 #include "web_server.h"
 #include "temp_sensor.h"
 #include "temp_sensor_2.h"
 #include "thresholds.h"
 #include "wind_sensor.h"
-#include <SPIFFS.h>
 #include "automation_logic.h"
+#include "motor_control.h"
 
 unsigned long lastPrintTime = 0;
-const unsigned long printInterval = 1000; // 5 seconds
+const unsigned long printInterval = 500; // 0.5 seconds
 
 const int MOTOR_UP_PIN = 14;
 const int MOTOR_DOWN_PIN = 27;
@@ -79,6 +80,7 @@ void loop()
 
   ArduinoOTA.handle();
   handleWebServer();
+  updateMotorTimer();
 
   if (currentMillis - lastPrintTime >= printInterval)
   {
@@ -90,18 +92,5 @@ void loop()
     float windSpeed = getWindSpeed();
 
     handleAutoControl(avgTemp, windSpeed);
-
-    // Serial.print("Temp1: ");
-    // Serial.print(temp1);
-    // Serial.print(" °C | Temp2: ");
-    // Serial.print(temp2);
-    // Serial.print(" °C | Avg: ");
-    // Serial.print(avgTemp);
-    // Serial.print(" °C | Humidity: ");
-    // Serial.print(getHumidity());
-    // Serial.println(" %");
-    // Serial.print("Wind Speed: ");
-    // Serial.print(getWindSpeed());
-    // Serial.println(" m/s");
   }
 }
