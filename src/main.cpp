@@ -12,10 +12,7 @@
 #include "motor_control.h"
 
 unsigned long lastPrintTime = 0;
-const unsigned long printInterval = 500; // 0.5 seconds
-
-const int MOTOR_UP_PIN = 14;
-const int MOTOR_DOWN_PIN = 27;
+const unsigned long printInterval = 1500; // 1.5 seconds
 
 void setupWiFi()
 {
@@ -48,13 +45,6 @@ void setupOTA()
   Serial.println("OTA Ready");
 }
 
-void setupPins(){
-  pinMode(MOTOR_UP_PIN, OUTPUT);
-  pinMode(MOTOR_DOWN_PIN, OUTPUT);
-  digitalWrite(MOTOR_UP_PIN, LOW);
-  digitalWrite(MOTOR_DOWN_PIN, LOW);
-}
-
 void setup()
 {
   Serial.begin(115200);
@@ -71,7 +61,7 @@ void setup()
   setupTempSensor();
   setupTempSensor2();
   setupWindSensor();
-  setupPins();
+  setupMotorPins();
 }
 
 void loop()

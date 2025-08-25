@@ -12,7 +12,7 @@ async function updateData() {
     }
 }
 
-setInterval(updateData, 500);
+setInterval(updateData, 1500); // Update every 1.5 seconds
 updateData();
 
 function sendMotorCommand(direction) {
