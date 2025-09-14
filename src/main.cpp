@@ -10,6 +10,7 @@
 #include "wind_sensor.h"
 #include "automation_logic.h"
 #include "motor_control.h"
+#include "buttons_control.h"
 
 unsigned long lastPrintTime = 0;
 const unsigned long printInterval = 1500; // 1.5 seconds
@@ -62,6 +63,8 @@ void setup()
   setupTempSensor2();
   setupWindSensor();
   setupMotorPins();
+  manualInit();
+  Serial.println("Setup complete.");
 }
 
 void loop()
@@ -71,6 +74,7 @@ void loop()
   ArduinoOTA.handle();
   handleWebServer();
   updateMotorTimer();
+  manualTick();
 
   if (currentMillis - lastPrintTime >= printInterval)
   {
@@ -82,6 +86,8 @@ void loop()
     updateWindSpeedBuffer(getWindSpeed());
     float windSpeed = getAverageWindSpeed();
 
-    handleAutoControl(avgTemp, windSpeed);
+    if (!manualIsActive()){          // pause automation while any button is held
+      handleAutoControl(avgTemp, windSpeed);
+    }
   }
 }
