@@ -5,6 +5,7 @@
 #include "wind_sensor.h"
 #include "motor_control.h"
 #include "thresholds.h"
+#include "buttons_control.h"
 #include <ArduinoJson.h>
 #include <SPIFFS.h>
 
@@ -49,6 +50,11 @@ void setupWebServer()
     json += "\"wind\":" + String(wind, 1);
     json += "}";
 
+    server.send(200, "application/json", json);
+  });
+
+  server.on("/api/status", HTTP_GET, []() {
+    String json = String("{\"manual\":") + (manualIsActive() ? "true" : "false") + "}";
     server.send(200, "application/json", json);
   });
 

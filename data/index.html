@@ -21,8 +21,12 @@
 
         <div class="section">
           <h2>Ročni nadzor motorjev</h2>
-          <button onclick="sendMotorCommand('up')">Gor</button>
-          <button onclick="sendMotorCommand('down')">Dol</button>
+          <button id="btnUp"   class="motor-btn" onclick="sendMotorCommand('up')">Gor</button>
+          <button id="btnDown" class="motor-btn" onclick="sendMotorCommand('down')">Dol</button>
+
+          <p id="manualLockNote" style="display:none; color:#b71c1c; font-weight:600;">
+            Ročni nadzor je aktiven – gumbi so zaklenjeni.
+          </p>
         </div>
 
         <div class="section">

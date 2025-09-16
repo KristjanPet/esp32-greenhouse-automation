@@ -15,6 +15,24 @@ async function updateData() {
 setInterval(updateData, 1500); // Update every 1.5 seconds
 updateData();
 
+async function pollStatus() {
+  try {
+    const res = await fetch('/api/status');
+    const { manual } = await res.json();
+
+    const btns = document.querySelectorAll('.motor-btn');
+    btns.forEach(b => b.disabled = manual);
+
+    const note = document.getElementById('manualLockNote');
+    if (note) note.style.display = manual ? 'block' : 'none';
+  } catch (e) {
+    console.warn('Status check failed', e);
+  }
+}
+
+setInterval(pollStatus, 1000);
+pollStatus(); // run once on load
+
 function sendMotorCommand(direction) {
   fetch('/api/motor', {
     method: 'POST',
