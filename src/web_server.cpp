@@ -64,21 +64,21 @@ void setupWebServer()
     if (body.indexOf("up") != -1) {
       if (isMotorDownActive()) {
         motorStop();
-        motorState = STOPPED;
+        setMotorState(MotorState::STOPPED);
         Serial.println("Motor stopped while going down");
       } else {
         motorGoUp();
-        motorState = OPENING;
+        setMotorState(MotorState::OPENING);
         Serial.println("Motor going up");
       }
     } else if (body.indexOf("down") != -1) {
       if (isMotorUpActive()) {
         motorStop();
-        motorState = STOPPED;
+        setMotorState(MotorState::STOPPED);
         Serial.println("Motor stopped while going up");
       } else {
         motorGoDown();
-        motorState = CLOSING;
+        setMotorState(MotorState::CLOSING);
         Serial.println("Motor going down");
       }
     }

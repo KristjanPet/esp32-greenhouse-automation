@@ -4,25 +4,26 @@
 #include "motor_control.h"
 
 void handleAutoControl(float temp, float wind)
-{
+{ 
+  int timeout = 10000; // 10 seconds timeout for motor operation
   if (currentThresholds.useTempOpen && temp > currentThresholds.tempOpen) {
-    if (motorState != OPENING && motorState != OPENED) {
-      startMotorUpTimed(10000);
-      motorState = OPENING;
+    if (getMotorState() != MotorState::OPENING && getMotorState() != MotorState::OPENED) {
+      startMotorUpTimed(timeout);
+      setMotorState(MotorState::OPENING);
     }
   }
   else if ((currentThresholds.useWindClose && wind > currentThresholds.windClose) ||
           (currentThresholds.useTempClose && temp < currentThresholds.tempClose)) {
-    if (motorState != CLOSING && motorState != CLOSED) {
-      startMotorDownTimed(10000);
-      motorState = CLOSING;
+    if (getMotorState() != MotorState::CLOSING && getMotorState() != MotorState::CLOSED) {
+      startMotorDownTimed(timeout);
+      setMotorState(MotorState::CLOSING);
     }
   }
   else if (currentThresholds.useWindReopen &&
           wind < currentThresholds.windReopen &&
-          motorState == CLOSED &&
+          getMotorState() == MotorState::CLOSED &&
           temp <= currentThresholds.tempOpen) {
-    startMotorUpTimed(10000);
-    motorState = OPENING;
+    startMotorUpTimed(timeout);
+    setMotorState(MotorState::OPENING);
   }
 }

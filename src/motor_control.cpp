@@ -8,7 +8,7 @@ static unsigned long motorTimerStart = 0;
 static unsigned long motorRunDuration = 0;
 static bool motorTimerActive = false;
 
-MotorState motorState = STOPPED; // Global motor state variable
+static MotorState motorState = MotorState::STOPPED; // Global motor state variable
 
 void setupMotorPins() {
   pinMode(MOTOR_DIR_PIN, OUTPUT);
@@ -66,7 +66,20 @@ void updateMotorTimer() {
     motorStop();
     motorTimerActive = false;
 
-    if (motorState == OPENING) motorState = OPENED;
-    else if (motorState == CLOSING) motorState = CLOSED;
+    if (motorState == MotorState::OPENING) motorState = MotorState::OPENED;
+    else if (motorState == MotorState::CLOSING) motorState = MotorState::CLOSED;
+  }
+}
+
+void setMotorState(MotorState s) { motorState = s; }
+MotorState getMotorState() { return motorState; }
+
+const char* motorStateStr() {
+  switch (motorState) {
+    case MotorState::OPENED:  return "odprto";
+    case MotorState::CLOSED:  return "zaprto";
+    case MotorState::OPENING: return "odpira se";
+    case MotorState::CLOSING: return "zapira se";
+    default:                  return "ročno premaknjeno";
   }
 }
