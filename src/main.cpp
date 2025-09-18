@@ -87,11 +87,12 @@ void loop()
     float temp1 = getTemperatureC();
     float temp2 = getTemperature2C();
     float avgTemp = (temp1 + temp2) / 2.0;
+    float humidity = getHumidity();
     updateWindSpeedBuffer(getWindSpeed());
     float windSpeed = getAverageWindSpeed();
 
     if (!manualIsActive()){          // pause automation while any button is held
-      handleAutoControl(avgTemp, windSpeed);
+      handleAutoControl(temp1, temp2, avgTemp, humidity, windSpeed);
     }
   }
 }

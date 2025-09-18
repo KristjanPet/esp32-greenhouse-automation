@@ -2,28 +2,49 @@
 #include "automation_logic.h"
 #include "thresholds.h"
 #include "motor_control.h"
+#include "logger.h"
 
-void handleAutoControl(float temp, float wind)
+void handleAutoControl(float temp, float temp2, float tempAvg, float humidity, float wind)
 { 
   int timeout = 10000; // 10 seconds timeout for motor operation
-  if (currentThresholds.useTempOpen && temp > currentThresholds.tempOpen) {
-    if (getMotorState() != MotorState::OPENING && getMotorState() != MotorState::OPENED) {
+  MotorState prevState = getMotorState();
+  if (currentThresholds.useTempOpen && tempAvg > currentThresholds.tempOpen) {
+    if (prevState != MotorState::OPENING && prevState != MotorState::OPENED) {
       startMotorUpTimed(timeout);
       setMotorState(MotorState::OPENING);
+      logMove(Trigger::AUTO_TEMP, prevState, MotorState::OPENING,
+              temp, temp2, tempAvg, humidity, wind,
+              currentThresholds.tempOpen, currentThresholds.tempClose,
+              currentThresholds.windClose, currentThresholds.windReopen);
     }
   }
   else if ((currentThresholds.useWindClose && wind > currentThresholds.windClose) ||
-          (currentThresholds.useTempClose && temp < currentThresholds.tempClose)) {
-    if (getMotorState() != MotorState::CLOSING && getMotorState() != MotorState::CLOSED) {
+          (currentThresholds.useTempClose && tempAvg < currentThresholds.tempClose)) {
+    if (prevState != MotorState::CLOSING && prevState != MotorState::CLOSED) {
       startMotorDownTimed(timeout);
       setMotorState(MotorState::CLOSING);
+      if(wind > currentThresholds.windClose)
+        logMove(Trigger::AUTO_WIND, prevState, MotorState::CLOSING,
+              temp, temp2, tempAvg, humidity, wind,
+              currentThresholds.tempOpen, currentThresholds.tempClose,
+              currentThresholds.windClose, currentThresholds.windReopen);
+      else{
+        logMove(Trigger::AUTO_TEMP, prevState, MotorState::CLOSING,
+              temp, temp2, tempAvg, humidity, wind,
+              currentThresholds.tempOpen, currentThresholds.tempClose,
+              currentThresholds.windClose, currentThresholds.windReopen);
+      }
     }
   }
   else if (currentThresholds.useWindReopen &&
           wind < currentThresholds.windReopen &&
-          getMotorState() == MotorState::CLOSED &&
-          temp <= currentThresholds.tempOpen) {
+          prevState == MotorState::CLOSED &&
+          tempAvg <= currentThresholds.tempOpen) {
     startMotorUpTimed(timeout);
     setMotorState(MotorState::OPENING);
+    logMove(Trigger::AUTO_WIND, prevState, MotorState::OPENING,
+            temp, temp2, tempAvg, humidity, wind,
+            currentThresholds.tempOpen, currentThresholds.tempClose,
+            currentThresholds.windClose, currentThresholds.windReopen);
   }
 }
