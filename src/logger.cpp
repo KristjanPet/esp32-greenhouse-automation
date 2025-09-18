@@ -1,0 +1,80 @@
+#include <FS.h>
+#include <SPIFFS.h>
+#include <ArduinoJson.h>
+#include <vector>
+#include "logger.h"
+#include "thresholds.h"
+
+extern Thresholds currentThresholds;
+extern String nowStr();
+extern const char* trigStr(Trigger t);
+
+void logMove(Trigger trig, MotorState prev, MotorState next,
+             float temp, float temp2, float tempAvg, float hum, float wind,
+             float tOpen, float tClose, float wClose, float wReopen)
+{
+  File f = SPIFFS.open("/log.txt", FILE_APPEND);
+  if (!f) return;
+  // CSV-ish line; easy to parse
+  String line = nowStr() + "," + trigStr(trig) + "," +
+    String((int)prev) + "->" + String((int)next) + "," +
+    "T=" + String(temp,1) + ",T2=" + String(temp2,1) + ",TAvg=" +
+    String(tempAvg,1) + ",H=" + String(hum,1) + ",W=" + String(wind,1) + "," +
+    "TOpen=" + String(tOpen,1) + ",TClose=" + String(tClose,1) +
+    ",WClose=" + String(wClose,1) + ",WReopen=" + String(wReopen,1) + "\n";
+  f.print(line);
+  f.close();
+  trimLogIfNeeded(200);
+}
+
+void trimLogIfNeeded(int maxLines){
+  File f = SPIFFS.open("/log.txt", FILE_READ); if (!f) return;
+  // Count lines quickly
+  int lines = 0; while(f.available()) if (f.read()=='\n') lines++;
+  f.close();
+  if (lines <= maxLines) return;
+
+  // Keep last maxLines: read all, drop head
+  f = SPIFFS.open("/log.txt", FILE_READ);
+  String content = f.readString();
+  f.close();
+
+  int keepStart = 0;
+  int toDrop = lines - maxLines;
+  for (int i = 0; i < toDrop; i++) {
+    int pos = content.indexOf('\n', keepStart);
+    if (pos < 0) break;
+    keepStart = pos + 1;
+  }
+
+  File w = SPIFFS.open("/log.txt", FILE_WRITE);
+  if (!w) return;
+  w.print(content.substring(keepStart));
+  w.close();
+}
+
+String readLogsJSON(int maxLines){
+  File f = SPIFFS.open("/log.txt", FILE_READ);
+  DynamicJsonDocument doc(8192); // enough for ~100 small lines
+  JsonArray arr = doc.to<JsonArray>();
+  if (!f) {
+    String out; serializeJson(arr, out); return out;
+  }
+  // read all lines then take the tail
+  std::vector<String> lines;
+  while (f.available()){
+    String line = f.readStringUntil('\n');
+    if (line.length()) lines.push_back(line);
+  }
+  f.close();
+
+  int start = lines.size() > (size_t)maxLines ? (lines.size()-maxLines) : 0;
+  for (size_t i = start; i < lines.size(); ++i) arr.add(lines[i]);
+  String out; serializeJson(arr, out); return out;
+}
+
+String nowStr(){
+  struct tm t; if (!getLocalTime(&t)) return "1970-01-01 00:00:00";
+  char buf[20]; strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", &t);
+  return String(buf);
+}

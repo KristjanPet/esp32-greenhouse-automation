@@ -1,5 +1,10 @@
 #include "buttons_control.h"
 #include "motor_control.h"
+#include "logger.h"
+#include "temp_sensor.h"
+#include "temp_sensor_2.h"
+#include "wind_sensor.h"
+#include "thresholds.h"
 
 // pick your pins (INPUT_PULLUP → button to GND)
 static const int PIN_L_UP   = 19;
@@ -41,6 +46,12 @@ void manualTick() {
   bool upRaw = readUpRaw();
   bool downRaw = readDownRaw();
   uint32_t now = millis();
+  MotorState prevState = getMotorState();
+  float temp = getTemperatureC();
+  float temp2 = getTemperature2C();
+  float tempAvg = (temp + temp2) / 2.0;
+  float hum = getHumidity();
+  float wind = getAverageWindSpeed();
 
   if (upRaw != upLast || downRaw != downLast) {
     upLast = upRaw; downLast = downRaw; tChange = now;
@@ -56,8 +67,23 @@ void manualTick() {
       if (upStable)  { manualDir = ManualDir::UP;   motorStop(); motorGoUp(); setMotorState(MotorState::OPENING);}
       else           { manualDir = ManualDir::DOWN; motorStop(); motorGoDown(); setMotorState(MotorState::CLOSING); }
     } else {
-      if (manualDir == ManualDir::UP && !upStable)   { motorStop(); manualActive=false; manualDir=ManualDir::NONE; setMotorState(MotorState::STOPPED); }
-      else if (manualDir == ManualDir::DOWN && !downStable){ motorStop(); manualActive=false; manualDir=ManualDir::NONE; setMotorState(MotorState::STOPPED); }
+      if (manualDir == ManualDir::UP && !upStable){
+        motorStop(); 
+        manualActive=false; 
+        manualDir=ManualDir::NONE; 
+        setMotorState(MotorState::STOPPED);
+        logMove(Trigger::MANUALUP, prevState, getMotorState(), temp, temp2, tempAvg, hum, wind,
+         currentThresholds.tempOpen, currentThresholds.tempClose, currentThresholds.windReopen, currentThresholds.windClose);
+      }
+      else if (manualDir == ManualDir::DOWN && !downStable){ 
+        motorStop();
+        manualActive=false;
+        manualDir=ManualDir::NONE; 
+        setMotorState(MotorState::STOPPED);
+        logMove(Trigger::MANUALDOWN, prevState, getMotorState(), temp, temp2, tempAvg, hum, wind,
+         currentThresholds.tempOpen, currentThresholds.tempClose, currentThresholds.windReopen, currentThresholds.windClose);
+      }
+
       // opposite press while held is ignored by design
     }
   } else {

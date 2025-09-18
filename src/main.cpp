@@ -2,6 +2,7 @@
 #include <WiFi.h>
 #include <ArduinoOTA.h>
 #include <SPIFFS.h>
+#include <time.h>
 #include "../include/secrets.h"
 #include "web_server.h"
 #include "temp_sensor.h"
@@ -64,6 +65,9 @@ void setup()
   setupWindSensor();
   setupMotorPins();
   manualInit();
+  configTime(3600, 3600, "pool.ntp.org", "time.nist.gov"); // CET/CEST crude: 1h offset + DST 1h
+  // Better: use TZ string for Ljubljana:
+  setenv("TZ", "CET-1CEST,M3.5.0/2,M10.5.0/3", 1); tzset();
   Serial.println("Setup complete.");
 }
 
