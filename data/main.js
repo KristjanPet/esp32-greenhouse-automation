@@ -18,7 +18,8 @@ updateData();
 async function pollStatus() {
   try {
     const res = await fetch('/api/status');
-    const { manual } = await res.json();
+    const { manual, motorState } = await res.json();
+    document.getElementById('motorState').textContent = motorState || '--';
 
     const btns = document.querySelectorAll('.motor-btn');
     btns.forEach(b => b.disabled = manual);
@@ -88,3 +89,15 @@ function loadThresholds() {
     })
     .catch(err => console.error('Error loading thresholds:', err));
 }
+
+async function loadLogs() {
+  try {
+    const res = await fetch('/api/logs?n=100');
+    const arr = await res.json(); // array of strings
+    document.getElementById('logBox').textContent = arr.join('\n');
+  } catch(e) {
+    console.warn('Log fetch failed', e);
+  }
+}
+setInterval(loadLogs, 3000);
+loadLogs();

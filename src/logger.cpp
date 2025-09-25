@@ -78,3 +78,15 @@ String nowStr(){
   char buf[20]; strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", &t);
   return String(buf);
 }
+
+const char* trigStr(Trigger t) {
+  switch(t){
+    case Trigger::WEBDOWN: return "web_down";
+    case Trigger::WEBUP: return "web_up";
+    case Trigger::MANUALDOWN: return "manual_down";
+    case Trigger::MANUALUP: return "manual_up";
+    case Trigger::AUTO_TEMP: return "auto_temp";
+    case Trigger::AUTO_WIND: return "auto_wind";
+  }
+  return "unknown";
+}

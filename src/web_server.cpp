@@ -6,6 +6,7 @@
 #include "motor_control.h"
 #include "thresholds.h"
 #include "buttons_control.h"
+#include "logger.h"
 #include <ArduinoJson.h>
 #include <SPIFFS.h>
 
@@ -54,9 +55,17 @@ void setupWebServer()
   });
 
   server.on("/api/status", HTTP_GET, []() {
-    String json = String("{\"manual\":") + (manualIsActive() ? "true" : "false") + "}";
+    String json = String("{\"manual\":") + (manualIsActive() ? "true" : "false") +
+                ",\"motorState\":\"" + String(motorStateStr()) + "\"}";
     server.send(200, "application/json", json);
   });
+
+server.on("/api/logs", HTTP_GET, []() {
+  int n = 100;
+  if (server.hasArg("n")) n = server.arg("n").toInt();
+  server.send(200, "application/json", readLogsJSON(n));
+});
+
 
   server.on("/api/motor", HTTP_POST, []() {
     String body = server.arg("plain");
