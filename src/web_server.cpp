@@ -7,6 +7,7 @@
 #include "thresholds.h"
 #include "buttons_control.h"
 #include "logger.h"
+#include "change_bus.h"
 #include <ArduinoJson.h>
 #include <SPIFFS.h>
 
@@ -36,35 +37,37 @@ void setupWebServer()
   file.close();
   });
 
-  server.on("/api/sensors", []() {
-    float t1 = getTemperatureC();
-    float t2 = getTemperature2C();
-    float avg = (t1 + t2) / 2.0;
-    float hum = getHumidity();
-    float wind = getAverageWindSpeed();
-
-    String json = "{";
-    json += "\"temp1\":" + String(t1, 1) + ",";
-    json += "\"temp2\":" + String(t2, 1) + ",";
-    json += "\"avg\":"   + String(avg, 1) + ",";
-    json += "\"humidity\":" + String(hum, 1) + ",";
-    json += "\"wind\":" + String(wind, 1);
-    json += "}";
-
-    server.send(200, "application/json", json);
+  server.on("/api/sensors", HTTP_GET, []() {
+  // if cache is empty (e.g. right after boot), build it once
+    if (sensorsJson.length() == 0) {
+      float t1 = getTemperatureC();
+      float t2 = getTemperature2C();
+      float avg = (t1 + t2) / 2.0;
+      float hum = getHumidity();
+      float wind = getAverageWindSpeed();
+      updateSensorsCache(t1, t2, avg, hum, wind);
+    }
+    uint32_t since = server.hasArg("since") ? server.arg("since").toInt() : 0;
+    if (since == sensorsV) { server.send(204, "text/plain", ""); return; }
+    server.send(200, "application/json", sensorsJson);
   });
 
   server.on("/api/status", HTTP_GET, []() {
-    String json = String("{\"manual\":") + (manualIsActive() ? "true" : "false") +
-                ",\"motorState\":\"" + String(motorStateStr()) + "\"}";
-    server.send(200, "application/json", json);
+    if (statusJson.length() == 0) {
+      updateStatusCache(manualIsActive(), motorStateStr());
+    }
+    uint32_t since = server.hasArg("since") ? server.arg("since").toInt() : 0;
+    if (since == statusV) { server.send(204, "text/plain", ""); return; }
+    server.send(200, "application/json", statusJson);
   });
 
-server.on("/api/logs", HTTP_GET, []() {
-  int n = 100;
-  if (server.hasArg("n")) n = server.arg("n").toInt();
-  server.send(200, "application/json", readLogsJSON(n));
-});
+  server.on("/api/logs", HTTP_GET, []() {
+    uint32_t since = server.hasArg("since") ? server.arg("since").toInt() : 0;
+    if (since == logsV) { server.send(204, "text/plain", ""); return; }
+    String arr = readLogsJSON(100);
+    String out = "{\"v\":" + String(logsV) + ",\"lines\":" + arr + "}";
+    server.send(200, "application/json", out);
+  });
 
 
   server.on("/api/motor", HTTP_POST, []() {

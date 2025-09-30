@@ -1,38 +1,34 @@
-async function updateData() {
-    try {
-    const res = await fetch('/api/sensors');
-    const data = await res.json();
-    document.getElementById('temp1').textContent = data.temp1;
-    document.getElementById('temp2').textContent = data.temp2;
-    document.getElementById('avg').textContent = data.avg;
-    document.getElementById('humidity').textContent = data.humidity;
-    document.getElementById('wind').textContent = data.wind;
-    } catch (e) {
-    console.error("Ni mogoče naložiti podatkov:", e);
-    }
-}
-
-setInterval(updateData, 1500); // Update every 1.5 seconds
-updateData();
-
-async function pollStatus() {
+async function initPage() {
   try {
-    const res = await fetch('/api/status');
-    const { manual, motorState } = await res.json();
-    document.getElementById('motorState').textContent = motorState || '--';
+    const res = await fetch('/api/init');
+    const d = await res.json();
 
-    const btns = document.querySelectorAll('.motor-btn');
-    btns.forEach(b => b.disabled = manual);
+    // sensors
+    document.getElementById("temp1").textContent = d.sensors.temp1.toFixed(1);
+    document.getElementById("temp2").textContent = d.sensors.temp2.toFixed(1);
+    document.getElementById("avg").textContent   = d.sensors.avg.toFixed(1);
+    document.getElementById("humidity").textContent = d.sensors.humidity.toFixed(1);
+    document.getElementById("wind").textContent = d.sensors.wind.toFixed(1);
 
-    const note = document.getElementById('manualLockNote');
-    if (note) note.style.display = manual ? 'block' : 'none';
+    // status
+    document.getElementById("motorState").textContent = d.status.motorState;
+
+    //trhresholds
+    await loadThresholds();
+
+    // logs
+    const logContainer = document.getElementById("logContainer");
+    logContainer.innerHTML = "";
+    d.logs.forEach(e => {
+      const li = document.createElement("li");
+      li.textContent = e;
+      logContainer.appendChild(li);
+    });
   } catch (e) {
-    console.warn('Status check failed', e);
+    console.error("Init failed", e);
   }
 }
-
-setInterval(pollStatus, 1000);
-pollStatus(); // run once on load
+window.onload = initPage;
 
 function sendMotorCommand(direction) {
   fetch('/api/motor', {
@@ -73,31 +69,22 @@ function sendThresholds() {
   });
 }
 
-function loadThresholds() {
-  fetch('/api/thresholds')
-    .then(res => res.json())
-    .then(data => {
-      document.getElementById("tempOpen").value = data.tempOpen;
-      document.getElementById("tempClose").value = data.tempClose;
-      document.getElementById("windClose").value = data.windClose;
-      document.getElementById("windReopen").value = data.windReopen;
+async function loadThresholds() {
+try {
+    const res = await fetch('/api/thresholds');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const d = await res.json();
 
-      document.getElementById("useTempOpen").checked = data.useTempOpen;
-      document.getElementById("useTempClose").checked = data.useTempClose;
-      document.getElementById("useWindClose").checked = data.useWindClose;
-      document.getElementById("useWindReopen").checked = data.useWindReopen;
-    })
-    .catch(err => console.error('Error loading thresholds:', err));
-}
+    document.getElementById("tempOpen").value   = d.tempOpen;
+    document.getElementById("tempClose").value  = d.tempClose;
+    document.getElementById("windClose").value  = d.windClose;
+    document.getElementById("windReopen").value = d.windReopen;
 
-async function loadLogs() {
-  try {
-    const res = await fetch('/api/logs?n=100');
-    const arr = await res.json(); // array of strings
-    document.getElementById('logBox').textContent = arr.join('\n');
-  } catch(e) {
-    console.warn('Log fetch failed', e);
+    document.getElementById("useTempOpen").checked   = !!d.useTempOpen;
+    document.getElementById("useTempClose").checked  = !!d.useTempClose;
+    document.getElementById("useWindClose").checked  = !!d.useWindClose;
+    document.getElementById("useWindReopen").checked = !!d.useWindReopen;
+  } catch (e) {
+    console.error('Error loading thresholds:', e);
   }
 }
-setInterval(loadLogs, 3000);
-loadLogs();

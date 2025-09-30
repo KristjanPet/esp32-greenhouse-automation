@@ -4,6 +4,8 @@
 #include <vector>
 #include "logger.h"
 #include "thresholds.h"
+#include "web_server_async.h"
+#include <change_bus.h>
 
 extern Thresholds currentThresholds;
 extern String nowStr();
@@ -25,6 +27,8 @@ void logMove(Trigger trig, MotorState prev, MotorState next,
   f.print(line);
   f.close();
   trimLogIfNeeded(200);
+  bumpLogsVersion();
+  ssePushLogs();
 }
 
 void trimLogIfNeeded(int maxLines){
@@ -71,6 +75,25 @@ String readLogsJSON(int maxLines){
   int start = lines.size() > (size_t)maxLines ? (lines.size()-maxLines) : 0;
   for (size_t i = start; i < lines.size(); ++i) arr.add(lines[i]);
   String out; serializeJson(arr, out); return out;
+}
+
+void appendLogsTo(JsonArray arr, int maxLines) {
+  File f = SPIFFS.open("/log.txt", FILE_READ);
+  if (!f) return;
+
+  std::vector<String> lines;
+  lines.reserve(maxLines + 16);
+
+  while (f.available()) {
+    String line = f.readStringUntil('\n');
+    if (line.length()) lines.push_back(line);
+  }
+  f.close();
+
+  int start = (lines.size() > (size_t)maxLines) ? (lines.size() - maxLines) : 0;
+  for (size_t i = start; i < lines.size(); ++i) {
+    arr.add(lines[i]);  // each element is a full line
+  }
 }
 
 String nowStr(){

@@ -12,6 +12,8 @@
 #include "automation_logic.h"
 #include "motor_control.h"
 #include "buttons_control.h"
+#include "web_server_async.h"
+#include <change_bus.h>
 
 unsigned long lastPrintTime = 0;
 const unsigned long printInterval = 1500; // 1.5 seconds
@@ -59,12 +61,12 @@ void setup()
     return;
   }
   loadThresholds();
-  setupWebServer();
   setupTempSensor();
   setupTempSensor2();
   setupWindSensor();
   setupMotorPins();
   manualInit();
+  setupWebServerAsync();
   configTime(3600, 3600, "pool.ntp.org", "time.nist.gov"); // CET/CEST crude: 1h offset + DST 1h
   // Better: use TZ string for Ljubljana:
   setenv("TZ", "CET-1CEST,M3.5.0/2,M10.5.0/3", 1); tzset();
@@ -76,7 +78,6 @@ void loop()
   unsigned long currentMillis = millis();
 
   ArduinoOTA.handle();
-  handleWebServer();
   updateMotorTimer();
   manualTick();
 
@@ -91,8 +92,14 @@ void loop()
     updateWindSpeedBuffer(getWindSpeed());
     float windSpeed = getAverageWindSpeed();
 
+    updateSensorsCache(temp1, temp2, avgTemp, humidity, windSpeed);
+    updateStatusCache(manualIsActive(), motorStateStr());
+
     if (!manualIsActive()){          // pause automation while any button is held
       handleAutoControl(temp1, temp2, avgTemp, humidity, windSpeed);
     }
+
+    sseUpdateSensors(temp1, temp2, avgTemp, humidity, windSpeed); 
+    sseUpdateStatus(manualIsActive(), motorStateStr());
   }
 }

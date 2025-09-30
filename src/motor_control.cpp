@@ -8,7 +8,7 @@ static unsigned long motorTimerStart = 0;
 static unsigned long motorRunDuration = 0;
 static bool motorTimerActive = false;
 
-extern MotorState motorState = MotorState::STOPPED; // Global motor state variable
+MotorState motorState = MotorState::STOPPED; // Global motor state variable
 
 void setupMotorPins() {
   pinMode(MOTOR_DIR_PIN, OUTPUT);

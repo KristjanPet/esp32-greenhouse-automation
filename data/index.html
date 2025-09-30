@@ -16,7 +16,7 @@
           <p><strong>Temperatura senzor 1:</strong> <span id="temp1">--</span> &deg;C</p>
           <p><strong>Temperatura senzor 2:</strong> <span id="temp2">--</span> &deg;C</p>
           <p><strong>Povprečna temperatura:</strong> <span id="avg">--</span> &deg;C</p>
-          <p><strong>Vlaga:</strong> <span id="humidity">--</span> &deg;C</p>
+          <p><strong>Vlaga:</strong> <span id="humidity">--</span> %</p>
         </div>
 
         <div class="section">
@@ -32,21 +32,52 @@
         <div class="section">
           <h2>Nastavitve pragov</h2>
           <p>
-            <label><input id="useTempOpen" type="checkbox" checked>Temp odpri: <input id="tempOpen" type="number" value="25"></label>
-            <label><input id="useTempClose" type="checkbox" checked>Temp zapri: <input id="tempClose" type="number" value="18"></label>
+            <label><input id="useTempOpen" type="checkbox" checked>Temp odpri: <input id="tempOpen" type="number" value="-1"></label>
+            <label><input id="useTempClose" type="checkbox" checked>Temp zapri: <input id="tempClose" type="number" value="-1"></label>
           </p>
           <p>
-            <label><input id="useWindClose" type="checkbox" checked>Veter zapri: <input id="windClose" type="number" value="10"></label>
-            <label><input id="useWindReopen" type="checkbox" checked>Veter odpri: <input id="windReopen" type="number" value="6"></label>
+            <label><input id="useWindClose" type="checkbox" checked>Veter zapri: <input id="windClose" type="number" value="-1"></label>
+            <label><input id="useWindReopen" type="checkbox" checked>Veter odpri: <input id="windReopen" type="number" value="-1"></label>
           </p>
           <button onclick="sendThresholds()">Shrani prage</button>
         </div>
-      </div>
-      <div class="section">
-        <h2>Dnevnik premikov</h2>
-        <pre id="logBox" style="max-height:240px; overflow:auto; background:#f7f7f7; padding:10px; border-radius:6px;"></pre>
+
+        <div class="section">
+          <h2>Dnevnik premikov</h2>
+          <div style="overflow-x:auto;">
+        </div>
       </div>
 
         <script src="main.js"> </script>
+        <script>
+          // Server-Sent Events
+          const es = new EventSource('/events');
+
+          es.addEventListener('sensors', (e) => {
+            const d = JSON.parse(e.data);
+            document.getElementById('temp1').textContent = d.temp1.toFixed(1);
+            document.getElementById('temp2').textContent = d.temp2.toFixed(1);
+            document.getElementById('avg').textContent   = d.avg.toFixed(1);
+            document.getElementById('humidity').textContent = d.humidity.toFixed(1);
+            document.getElementById('wind').textContent  = d.wind.toFixed(1);
+          });
+
+          es.addEventListener('status', (e) => {
+            const d = JSON.parse(e.data);
+            document.getElementById('motorState').textContent = d.motorState || '--';
+
+            const btns = document.querySelectorAll('.motor-btn');
+            btns.forEach(b => b.disabled = !!d.manual);
+
+            const note = document.getElementById('manualLockNote');
+            if (note) note.style.display = d.manual ? 'block' : 'none';
+          });
+
+          es.addEventListener('logs', (e) => {
+            const d = JSON.parse(e.data);
+            const box = document.getElementById('logBox');
+            if (box && d.lines) box.textContent = d.lines.join('\n');
+          });
+        </script>
     </body>
     </html>
