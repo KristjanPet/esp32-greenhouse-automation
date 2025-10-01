@@ -17,18 +17,50 @@ async function initPage() {
     await loadThresholds();
 
     // logs
-    const logContainer = document.getElementById("logContainer");
-    logContainer.innerHTML = "";
-    d.logs.forEach(e => {
-      const li = document.createElement("li");
-      li.textContent = e;
-      logContainer.appendChild(li);
-    });
+    renderLogsToTable(d.logs || []);  
   } catch (e) {
     console.error("Init failed", e);
   }
 }
 window.onload = initPage;
+
+function renderLogsToTable(lines) {
+  const tbody = document.querySelector("#logTable tbody");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+
+  lines.forEach(line => {
+    const parts = line.split(",");
+    if (parts.length < 3) return;
+    const [timestamp, trigger, transition, ...kvPairs] = parts;
+    const [prevState, newState] = (transition || "").split("->");
+
+    const kv = {};
+    kvPairs.forEach(p => {
+      const [k, v] = p.split("=");
+      if (k && v !== undefined) kv[k.trim()] = v.trim();
+    });
+    const show = (k, d=1) => (k in kv ? Number(kv[k]).toFixed(d) : "—");
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${timestamp}</td>
+      <td>${trigger}</td>
+      <td>${prevState ?? "—"}</td>
+      <td>${newState ?? "—"}</td>
+      <td>${show("T")}</td>
+      <td>${show("T2")}</td>
+      <td>${show("TAvg")}</td>
+      <td>${show("H")}</td>
+      <td>${show("W")}</td>
+      <td>${show("TOpen")}</td>
+      <td>${show("TClose")}</td>
+      <td>${show("WClose")}</td>
+      <td>${show("WReopen")}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
 
 function sendMotorCommand(direction) {
   fetch('/api/motor', {

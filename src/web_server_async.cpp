@@ -140,6 +140,7 @@ void setupWebServerAsync() {
   // --- Logs fetch (still HTTP GET; you could also stream over SSE if you like)
   server.on("/api/logs", HTTP_GET, [](AsyncWebServerRequest* request){
     String arr = readLogsJSON(100);
+    Serial.println("Logs JSON: " + arr);
     request->send(200, "application/json", arr);
   });
 

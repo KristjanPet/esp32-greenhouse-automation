@@ -78,3 +78,40 @@ input[type="number"] {
   width: 60px;
   padding: 4px;
 }
+
+#logTable {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.9em;
+}
+
+#logTable th  {
+  border: 1px solid #ccc;
+  background-color: #5a5a5a;
+  padding: 6px 8px;
+  text-align: center;
+  color: white;
+}
+
+#logTable td{
+  border: 1px solid #ccc;
+  padding: 6px 8px;
+  text-align: center;
+}
+
+#logTable tr:nth-child(even) { background-color: #f9f9f9; }
+#logTable tr:hover { background-color: #eef; }
+
+.threshold-label {
+  padding: 3px 6px;
+  border-radius: 4px;
+  font-weight: bold;
+}
+.threshold-active {
+  background-color: #c8e6c9; /* greenish */
+  color: #1b5e20;
+}
+.threshold-inactive {
+  background-color: #ffcdd2; /* reddish */
+  color: #b71c1c;
+}
