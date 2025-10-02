@@ -83,3 +83,14 @@ const char* motorStateStr() {
     default:                  return "ročno premaknjeno";
   }
 }
+
+const char* getStateStr(MotorState t) {
+  switch(t){
+    case MotorState::STOPPED: return "Stopped";
+    case MotorState::OPENING: return "Opening";
+    case MotorState::CLOSING: return "Closing";
+    case MotorState::OPENED: return "Opened";
+    case MotorState::CLOSED: return "Closed";
+  }
+  return "unknown";
+}

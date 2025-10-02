@@ -114,12 +114,14 @@ void setupWebServerAsync() {
       StaticJsonDocument<128> doc;
       if (deserializeJson(doc, data, len)) { request->send(400,"text/plain","Invalid JSON"); return; }
       const char* dir = doc["direction"] | "";
+      MotorState prevState = getMotorState();
       if (strcmp(dir,"up")==0)   { // use your timed start or direct drive
         if (isMotorDownActive()) {
             motorStop();
             setMotorState(MotorState::STOPPED);
         } else {
             motorGoUp();
+            logMove(Trigger::WEBUP, prevState, MotorState::OPENING);
             setMotorState(MotorState::OPENING);
         }
       }
@@ -129,6 +131,7 @@ void setupWebServerAsync() {
             setMotorState(MotorState::STOPPED);
         } else {
             motorGoDown();
+            logMove(Trigger::WEBDOWN, prevState, MotorState::CLOSING);
             setMotorState(MotorState::CLOSING);
         }
       }

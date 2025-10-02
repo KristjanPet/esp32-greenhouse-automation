@@ -5,25 +5,35 @@
 #include "logger.h"
 #include "thresholds.h"
 #include "web_server_async.h"
+#include "temp_sensor.h"
+#include "temp_sensor_2.h"
+#include "wind_sensor.h"
 #include <change_bus.h>
 
 extern Thresholds currentThresholds;
 extern String nowStr();
 extern const char* trigStr(Trigger t);
 
-void logMove(Trigger trig, MotorState prev, MotorState next,
-             float temp, float temp2, float tempAvg, float hum, float wind,
-             float tOpen, float tClose, float wClose, float wReopen)
+void logMove(Trigger trig, MotorState prev, MotorState next)
 {
+  float temp = getTemperatureC();
+  float temp2 = getTemperature2C();
+  float tempAvg = (temp + temp2) / 2.0;
+  float hum = getHumidity();
+  float wind = getAverageWindSpeed();
+
+  String strPrev = getStateStr(prev);
+  String strNext = getStateStr(next);
+
   File f = SPIFFS.open("/log.txt", FILE_APPEND);
   if (!f) return;
   // CSV-ish line; easy to parse
   String line = nowStr() + "," + trigStr(trig) + "," +
-    String((int)prev) + "->" + String((int)next) + "," +
+    strNext + "->" + strPrev + "," +
     "T=" + String(temp,1) + ",T2=" + String(temp2,1) + ",TAvg=" +
     String(tempAvg,1) + ",H=" + String(hum,1) + ",W=" + String(wind,1) + "," +
-    "TOpen=" + String(tOpen,1) + ",TClose=" + String(tClose,1) +
-    ",WClose=" + String(wClose,1) + ",WReopen=" + String(wReopen,1) + "\n";
+    "TOpen=" + String(currentThresholds.tempOpen,1) + ",TClose=" + String(currentThresholds.tempClose,1) +
+    ",WClose=" + String(currentThresholds.windClose,1) + ",WReopen=" + String(currentThresholds.windReopen,1) + "\n";
   f.print(line);
   f.close();
   trimLogIfNeeded(200);

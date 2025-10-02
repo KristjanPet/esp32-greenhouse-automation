@@ -16,5 +16,6 @@ void startMotorDownTimed(unsigned long durationMs);
 void setMotorState(MotorState s);
 MotorState getMotorState();
 const char* motorStateStr();
+const char* getStateStr(MotorState t);
 
 extern MotorState motorState; // Global motor state variable

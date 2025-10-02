@@ -47,11 +47,6 @@ void manualTick() {
   bool downRaw = readDownRaw();
   uint32_t now = millis();
   MotorState prevState = getMotorState();
-  float temp = getTemperatureC();
-  float temp2 = getTemperature2C();
-  float tempAvg = (temp + temp2) / 2.0;
-  float hum = getHumidity();
-  float wind = getAverageWindSpeed();
 
   if (upRaw != upLast || downRaw != downLast) {
     upLast = upRaw; downLast = downRaw; tChange = now;
@@ -64,29 +59,27 @@ void manualTick() {
   if (upStable || downStable) {
     if (!manualActive) {
       manualActive = true;
-      if (upStable)  { manualDir = ManualDir::UP;   motorStop(); motorGoUp(); setMotorState(MotorState::OPENING);}
-      else           { manualDir = ManualDir::DOWN; motorStop(); motorGoDown(); setMotorState(MotorState::CLOSING); }
+      if (upStable)  { manualDir = ManualDir::UP;   motorStop(); motorGoUp(); setMotorState(MotorState::OPENING); logMove(Trigger::MANUALUP, prevState, getMotorState()); }
+      else           { manualDir = ManualDir::DOWN; motorStop(); motorGoDown(); setMotorState(MotorState::CLOSING); logMove(Trigger::MANUALDOWN, prevState, getMotorState()); }
     } else {
       if (manualDir == ManualDir::UP && !upStable){
         motorStop(); 
         manualActive=false; 
         manualDir=ManualDir::NONE; 
         setMotorState(MotorState::STOPPED);
-        logMove(Trigger::MANUALUP, prevState, getMotorState(), temp, temp2, tempAvg, hum, wind,
-         currentThresholds.tempOpen, currentThresholds.tempClose, currentThresholds.windReopen, currentThresholds.windClose);
+        logMove(Trigger::MANUALUP, prevState, getMotorState());
       }
       else if (manualDir == ManualDir::DOWN && !downStable){ 
         motorStop();
         manualActive=false;
         manualDir=ManualDir::NONE; 
         setMotorState(MotorState::STOPPED);
-        logMove(Trigger::MANUALDOWN, prevState, getMotorState(), temp, temp2, tempAvg, hum, wind,
-         currentThresholds.tempOpen, currentThresholds.tempClose, currentThresholds.windReopen, currentThresholds.windClose);
+        logMove(Trigger::MANUALDOWN, prevState, getMotorState());
       }
 
       // opposite press while held is ignored by design
     }
   } else {
-    if (manualActive) { motorStop(); manualActive=false; manualDir=ManualDir::NONE; }
+    if (manualActive) { motorStop(); manualActive=false; manualDir=ManualDir::NONE; setMotorState(MotorState::STOPPED);}
   }
 }

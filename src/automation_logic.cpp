@@ -12,10 +12,7 @@ void handleAutoControl(float temp, float temp2, float tempAvg, float humidity, f
     if (prevState != MotorState::OPENING && prevState != MotorState::OPENED) {
       startMotorUpTimed(timeout);
       setMotorState(MotorState::OPENING);
-      logMove(Trigger::AUTO_TEMP, prevState, MotorState::OPENING,
-              temp, temp2, tempAvg, humidity, wind,
-              currentThresholds.tempOpen, currentThresholds.tempClose,
-              currentThresholds.windClose, currentThresholds.windReopen);
+      logMove(Trigger::AUTO_TEMP, prevState, MotorState::OPENING);
     }
   }
   else if ((currentThresholds.useWindClose && wind > currentThresholds.windClose) ||
@@ -24,15 +21,9 @@ void handleAutoControl(float temp, float temp2, float tempAvg, float humidity, f
       startMotorDownTimed(timeout);
       setMotorState(MotorState::CLOSING);
       if(wind > currentThresholds.windClose)
-        logMove(Trigger::AUTO_WIND, prevState, MotorState::CLOSING,
-              temp, temp2, tempAvg, humidity, wind,
-              currentThresholds.tempOpen, currentThresholds.tempClose,
-              currentThresholds.windClose, currentThresholds.windReopen);
+        logMove(Trigger::AUTO_WIND, prevState, MotorState::CLOSING);
       else{
-        logMove(Trigger::AUTO_TEMP, prevState, MotorState::CLOSING,
-              temp, temp2, tempAvg, humidity, wind,
-              currentThresholds.tempOpen, currentThresholds.tempClose,
-              currentThresholds.windClose, currentThresholds.windReopen);
+        logMove(Trigger::AUTO_TEMP, prevState, MotorState::CLOSING);
       }
     }
   }
@@ -42,9 +33,6 @@ void handleAutoControl(float temp, float temp2, float tempAvg, float humidity, f
           tempAvg <= currentThresholds.tempOpen) {
     startMotorUpTimed(timeout);
     setMotorState(MotorState::OPENING);
-    logMove(Trigger::AUTO_WIND, prevState, MotorState::OPENING,
-            temp, temp2, tempAvg, humidity, wind,
-            currentThresholds.tempOpen, currentThresholds.tempClose,
-            currentThresholds.windClose, currentThresholds.windReopen);
+    logMove(Trigger::AUTO_WIND, prevState, MotorState::OPENING);
   }
 }
