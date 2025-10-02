@@ -59,22 +59,28 @@ void trimLogIfNeeded(int maxLines){
 
 String readLogsJSON(int maxLines){
   File f = SPIFFS.open("/log.txt", FILE_READ);
-  DynamicJsonDocument doc(8192); // enough for ~100 small lines
+  DynamicJsonDocument doc(8192);                // v7 style
   JsonArray arr = doc.to<JsonArray>();
-  if (!f) {
-    String out; serializeJson(arr, out); return out;
-  }
-  // read all lines then take the tail
+  if (!f) { String out; serializeJson(arr, out); return out; }
+
   std::vector<String> lines;
+  lines.reserve(maxLines + 16);
   while (f.available()){
     String line = f.readStringUntil('\n');
     if (line.length()) lines.push_back(line);
   }
   f.close();
 
-  int start = lines.size() > (size_t)maxLines ? (lines.size()-maxLines) : 0;
-  for (size_t i = start; i < lines.size(); ++i) arr.add(lines[i]);
-  String out; serializeJson(arr, out); return out;
+  const int total = (int)lines.size();
+  const int start = total > maxLines ? (total - maxLines) : 0;
+
+  // push NEWEST first
+  for (int i = total - 1; i >= start; --i) {
+    arr.add(lines[i]);
+  }
+
+  String out; serializeJson(doc, out); 
+  return out;
 }
 
 void appendLogsTo(JsonArray arr, int maxLines) {
@@ -83,16 +89,18 @@ void appendLogsTo(JsonArray arr, int maxLines) {
 
   std::vector<String> lines;
   lines.reserve(maxLines + 16);
-
   while (f.available()) {
     String line = f.readStringUntil('\n');
     if (line.length()) lines.push_back(line);
   }
   f.close();
 
-  int start = (lines.size() > (size_t)maxLines) ? (lines.size() - maxLines) : 0;
-  for (size_t i = start; i < lines.size(); ++i) {
-    arr.add(lines[i]);  // each element is a full line
+  const int total = (int)lines.size();
+  const int start = total > maxLines ? (total - maxLines) : 0;
+
+  // push NEWEST first
+  for (int i = total - 1; i >= start; --i) {
+    arr.add(lines[i]);
   }
 }
 

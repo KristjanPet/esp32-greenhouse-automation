@@ -114,7 +114,7 @@ void setupWebServerAsync() {
       StaticJsonDocument<128> doc;
       if (deserializeJson(doc, data, len)) { request->send(400,"text/plain","Invalid JSON"); return; }
       const char* dir = doc["direction"] | "";
-      if      (strcmp(dir,"up")==0)   { // use your timed start or direct drive
+      if (strcmp(dir,"up")==0)   { // use your timed start or direct drive
         if (isMotorDownActive()) {
             motorStop();
             setMotorState(MotorState::STOPPED);
@@ -127,11 +127,9 @@ void setupWebServerAsync() {
         if (isMotorUpActive()) {
             motorStop();
             setMotorState(MotorState::STOPPED);
-            Serial.println("Motor stopped while going up");
         } else {
             motorGoDown();
             setMotorState(MotorState::CLOSING);
-            Serial.println("Motor going down");
         }
       }
       request->send(200,"text/plain","ok");
