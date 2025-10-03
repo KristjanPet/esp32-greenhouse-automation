@@ -107,11 +107,11 @@ input[type="number"] {
   border-radius: 4px;
   font-weight: bold;
 }
-.threshold-active {
+td.active {
   background-color: #c8e6c9; /* greenish */
   color: #1b5e20;
 }
-.threshold-inactive {
+td.inactive {
   background-color: #ffcdd2; /* reddish */
   color: #b71c1c;
 }

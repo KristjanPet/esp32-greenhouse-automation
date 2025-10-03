@@ -46,17 +46,17 @@ function renderLogsToTable(lines) {
     tr.innerHTML = `
       <td>${timestamp}</td>
       <td>${trigger}</td>
-      <td>${prevState ?? "—"}</td>
       <td>${newState ?? "—"}</td>
+      <td>${prevState ?? "—"}</td>
       <td>${show("T")}</td>
       <td>${show("T2")}</td>
       <td>${show("TAvg")}</td>
       <td>${show("H")}</td>
       <td>${show("W")}</td>
-      <td>${show("TOpen")}</td>
-      <td>${show("TClose")}</td>
-      <td>${show("WClose")}</td>
-      <td>${show("WReopen")}</td>
+      <td class="${kv.UseTOpen === "1" ? "active" : "inactive"}">${show("TOpen")}</td>
+      <td class="${kv.UseTClose === "1" ? "active" : "inactive"}">${show("TClose")}</td>
+      <td class="${kv.UseWClose === "1" ? "active" : "inactive"}">${show("WClose")}</td>
+      <td class="${kv.UseWReopen === "1" ? "active" : "inactive"}">${show("WReopen")}</td>
     `;
     tbody.appendChild(tr);
   });

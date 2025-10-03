@@ -33,7 +33,9 @@ void logMove(Trigger trig, MotorState prev, MotorState next)
     "T=" + String(temp,1) + ",T2=" + String(temp2,1) + ",TAvg=" +
     String(tempAvg,1) + ",H=" + String(hum,1) + ",W=" + String(wind,1) + "," +
     "TOpen=" + String(currentThresholds.tempOpen,1) + ",TClose=" + String(currentThresholds.tempClose,1) +
-    ",WClose=" + String(currentThresholds.windClose,1) + ",WReopen=" + String(currentThresholds.windReopen,1) + "\n";
+    ",WClose=" + String(currentThresholds.windClose,1) + ",WReopen=" + String(currentThresholds.windReopen,1) +
+    ",UseTOpen=" + currentThresholds.useTempOpen + ",UseTClose=" + currentThresholds.useTempClose +
+    ",UseWClose=" + currentThresholds.useWindClose + ",UseWReopen=" + currentThresholds.useWindReopen + "\n";
   f.print(line);
   f.close();
   trimLogIfNeeded(200);
