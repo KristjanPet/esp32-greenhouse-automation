@@ -15,7 +15,10 @@
 #include "web_server_async.h"
 #include <change_bus.h>
 
+#include "wind_sensor.h"
+
 unsigned long lastPrintTime = 0;
+
 const unsigned long printInterval = 1500; // 1.5 seconds
 
 void setupWiFi()
@@ -64,6 +67,7 @@ void setup()
   setupTempSensor();
   setupTempSensor2();
   setupWindSensor();
+
   setupMotorPins();
   manualInit();
   setupWebServerAsync();
