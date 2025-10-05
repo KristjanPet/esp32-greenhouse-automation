@@ -1,15 +1,25 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <ArduinoOTA.h>
+#include <SPIFFS.h>
+#include <time.h>
 #include "../include/secrets.h"
 #include "web_server.h"
 #include "temp_sensor.h"
 #include "temp_sensor_2.h"
+#include "thresholds.h"
+#include "wind_sensor.h"
+#include "automation_logic.h"
+#include "motor_control.h"
+#include "buttons_control.h"
+#include "web_server_async.h"
+#include <change_bus.h>
 
 #include "wind_sensor.h"
 
 unsigned long lastPrintTime = 0;
-const unsigned long printInterval = 1000; // 5 seconds
+
+const unsigned long printInterval = 1500; // 1.5 seconds
 
 void setupWiFi()
 {
@@ -49,17 +59,31 @@ void setup()
 
   setupWiFi();
   setupOTA();
-  setupWebServer();
+  if (!SPIFFS.begin(true)) {
+    Serial.println("SPIFFS mount failed.");
+    return;
+  }
+  loadThresholds();
   setupTempSensor();
   setupTempSensor2();
   setupWindSensor();
+
+  setupMotorPins();
+  manualInit();
+  setupWebServerAsync();
+  configTime(3600, 3600, "pool.ntp.org", "time.nist.gov"); // CET/CEST crude: 1h offset + DST 1h
+  // Better: use TZ string for Ljubljana:
+  setenv("TZ", "CET-1CEST,M3.5.0/2,M10.5.0/3", 1); tzset();
+  Serial.println("Setup complete.");
+}
 
 void loop()
 {
   unsigned long currentMillis = millis();
 
   ArduinoOTA.handle();
-  handleWebServer();
+  updateMotorTimer();
+  manualTick();
 
   if (currentMillis - lastPrintTime >= printInterval)
   {
@@ -68,19 +92,18 @@ void loop()
     float temp1 = getTemperatureC();
     float temp2 = getTemperature2C();
     float avgTemp = (temp1 + temp2) / 2.0;
+    float humidity = getHumidity();
+    updateWindSpeedBuffer(getWindSpeed());
+    float windSpeed = getAverageWindSpeed();
 
+    updateSensorsCache(temp1, temp2, avgTemp, humidity, windSpeed);
+    updateStatusCache(manualIsActive(), motorStateStr());
 
-    // Serial.print("Temp1: ");
-    // Serial.print(temp1);
-    // Serial.print(" °C | Temp2: ");
-    // Serial.print(temp2);
-    // Serial.print(" °C | Avg: ");
-    // Serial.print(avgTemp);
-    // Serial.print(" °C | Humidity: ");
-    // Serial.print(getHumidity());
-    Serial.println(" %");
-    Serial.print("Wind Speed: ");
-    Serial.print(getWindSpeed());
-    Serial.println(" m/s");
+    if (!manualIsActive()){          // pause automation while any button is held
+      handleAutoControl(temp1, temp2, avgTemp, humidity, windSpeed);
+    }
+
+    sseUpdateSensors(temp1, temp2, avgTemp, humidity, windSpeed); 
+    sseUpdateStatus(manualIsActive(), motorStateStr());
   }
 }
