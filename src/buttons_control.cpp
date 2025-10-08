@@ -59,8 +59,20 @@ void manualTick() {
   if (upStable || downStable) {
     if (!manualActive) {
       manualActive = true;
-      if (upStable)  { manualDir = ManualDir::UP;   motorStop(); motorGoUp(); setMotorState(MotorState::OPENING); logMove(Trigger::MANUALUP, prevState, getMotorState()); }
-      else           { manualDir = ManualDir::DOWN; motorStop(); motorGoDown(); setMotorState(MotorState::CLOSING); logMove(Trigger::MANUALDOWN, prevState, getMotorState()); }
+      if (upStable)  { 
+        manualDir = ManualDir::UP;
+        motorStop();
+        motorGoUp();
+        setMotorState(MotorState::OPENING); 
+        logMove(Trigger::MANUALUP, prevState, getMotorState());
+      }
+      else{
+        manualDir = ManualDir::DOWN;
+        motorStop();
+        motorGoDown();
+        setMotorState(MotorState::CLOSING);
+        logMove(Trigger::MANUALDOWN, prevState, getMotorState());
+      }
     } else {
       if (manualDir == ManualDir::UP && !upStable){
         motorStop(); 
@@ -80,6 +92,11 @@ void manualTick() {
       // opposite press while held is ignored by design
     }
   } else {
-    if (manualActive) { motorStop(); manualActive=false; manualDir=ManualDir::NONE; setMotorState(MotorState::STOPPED);}
+    if (manualActive) { 
+      motorStop();
+      manualActive=false;
+      manualDir=ManualDir::NONE;
+      setMotorState(MotorState::STOPPED);
+    }
   }
 }

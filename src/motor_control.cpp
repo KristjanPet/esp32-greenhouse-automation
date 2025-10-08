@@ -2,7 +2,8 @@
 #include "motor_control.h"
 
 const int MOTOR_DIR_PIN = 14; // Pin for motor direction (up/down)
-const int MOTOR_ON_PIN = 27; // Pin for motor on/off
+const int LEFT_MOTOR_ON_PIN = 26; // Pin for left motor on/off
+const int RIGHT_MOTOR_ON_PIN = 27; // Pin for right motor on/off
 
 static unsigned long motorTimerStart = 0;
 static unsigned long motorRunDuration = 0;
@@ -12,39 +13,46 @@ MotorState motorState = MotorState::STOPPED; // Global motor state variable
 
 void setupMotorPins() {
   pinMode(MOTOR_DIR_PIN, OUTPUT);
-  pinMode(MOTOR_ON_PIN, OUTPUT);
+  pinMode(LEFT_MOTOR_ON_PIN, OUTPUT);
+  pinMode(RIGHT_MOTOR_ON_PIN, OUTPUT);
   digitalWrite(MOTOR_DIR_PIN, LOW);
-  digitalWrite(MOTOR_ON_PIN, LOW);
+  digitalWrite(LEFT_MOTOR_ON_PIN, LOW);
+  digitalWrite(RIGHT_MOTOR_ON_PIN, LOW);
 }
 
 void motorGoUp() {
-  digitalWrite(MOTOR_ON_PIN, LOW);
+  digitalWrite(LEFT_MOTOR_ON_PIN, LOW);
+  digitalWrite(RIGHT_MOTOR_ON_PIN, LOW);
   delay(100);
   digitalWrite(MOTOR_DIR_PIN, HIGH);
   delay(100);
-  digitalWrite(MOTOR_ON_PIN, HIGH);
+  digitalWrite(LEFT_MOTOR_ON_PIN, HIGH);
+  digitalWrite(RIGHT_MOTOR_ON_PIN, HIGH);
 }
 
 void motorGoDown() {
-  digitalWrite(MOTOR_ON_PIN, LOW);
+  digitalWrite(LEFT_MOTOR_ON_PIN, LOW);
+  digitalWrite(RIGHT_MOTOR_ON_PIN, LOW);
   delay(100);
   digitalWrite(MOTOR_DIR_PIN, LOW);
   delay(100);
-  digitalWrite(MOTOR_ON_PIN, HIGH);
+  digitalWrite(LEFT_MOTOR_ON_PIN, HIGH);
+  digitalWrite(RIGHT_MOTOR_ON_PIN, HIGH);
 }
 
 void motorStop() {
-  digitalWrite(MOTOR_ON_PIN, LOW);
+  digitalWrite(LEFT_MOTOR_ON_PIN, LOW);
+  digitalWrite(RIGHT_MOTOR_ON_PIN, LOW);
   delay(100);
   digitalWrite(MOTOR_DIR_PIN, LOW);
 }
 
 bool isMotorUpActive() {
-  return digitalRead(MOTOR_DIR_PIN) == HIGH && digitalRead(MOTOR_ON_PIN) == HIGH;
+  return digitalRead(MOTOR_DIR_PIN) == HIGH && digitalRead(RIGHT_MOTOR_ON_PIN) == HIGH;
 }
 
 bool isMotorDownActive() {
-  return digitalRead(MOTOR_DIR_PIN) == LOW && digitalRead(MOTOR_ON_PIN) == HIGH;
+  return digitalRead(MOTOR_DIR_PIN) == LOW && digitalRead(RIGHT_MOTOR_ON_PIN) == HIGH;
 }
 
 void startMotorUpTimed(unsigned long durationMs) {
