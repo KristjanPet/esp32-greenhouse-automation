@@ -4,7 +4,6 @@
 #include <SPIFFS.h>
 #include <time.h>
 #include "../include/secrets.h"
-#include "web_server.h"
 #include "temp_sensor.h"
 #include "temp_sensor_2.h"
 #include "thresholds.h"
@@ -18,8 +17,6 @@
 #include "wind_sensor.h"
 
 unsigned long lastPrintTime = 0;
-
-const unsigned long printInterval = 1500; // 1.5 seconds
 
 void setupWiFi()
 {
@@ -59,7 +56,8 @@ void setup()
 
   setupWiFi();
   setupOTA();
-  if (!SPIFFS.begin(true)) {
+  if (!SPIFFS.begin(true))
+  {
     Serial.println("SPIFFS mount failed.");
     return;
   }
@@ -73,7 +71,8 @@ void setup()
   setupWebServerAsync();
   configTime(3600, 3600, "pool.ntp.org", "time.nist.gov"); // CET/CEST crude: 1h offset + DST 1h
   // Better: use TZ string for Ljubljana:
-  setenv("TZ", "CET-1CEST,M3.5.0/2,M10.5.0/3", 1); tzset();
+  setenv("TZ", "CET-1CEST,M3.5.0/2,M10.5.0/3", 1);
+  tzset();
   Serial.println("Setup complete.");
 }
 
@@ -85,7 +84,7 @@ void loop()
   updateMotorTimer();
   manualTick();
 
-  if (currentMillis - lastPrintTime >= printInterval)
+  if (currentMillis - lastPrintTime >= sensorReadInterval)
   {
     lastPrintTime = currentMillis;
 
@@ -99,11 +98,12 @@ void loop()
     updateSensorsCache(temp1, temp2, avgTemp, humidity, windSpeed);
     updateStatusCache(manualIsActive(), motorStateStr());
 
-    if (!manualIsActive()){          // pause automation while any button is held
+    if (!manualIsActive())
+    { // pause automation while any button is held
       handleAutoControl(temp1, temp2, avgTemp, humidity, windSpeed);
     }
 
-    sseUpdateSensors(temp1, temp2, avgTemp, humidity, windSpeed); 
+    sseUpdateSensors(temp1, temp2, avgTemp, humidity, windSpeed);
     sseUpdateStatus(manualIsActive(), motorStateStr());
   }
 }
