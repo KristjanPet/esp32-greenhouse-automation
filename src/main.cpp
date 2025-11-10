@@ -83,6 +83,7 @@ void loop()
   ArduinoOTA.handle();
   updateMotorTimer();
   manualTick();
+  tickMotion();
 
   if (currentMillis - lastPrintTime >= sensorReadInterval)
   {
