@@ -10,7 +10,7 @@ static unsigned long motorTimerStart = 0;
 static unsigned long motorRunDuration = 0;
 static bool motorTimerActive = false;
 
-static float currentPercent = NAN;
+static float currentPercent = 69; // TEMP
 static float targetPercent = NAN;
 
 uint32_t lastTs = 0;
@@ -55,7 +55,7 @@ void motorStop()
   digitalWrite(RIGHT_MOTOR_ON_PIN, LOW);
   delay(100);
   digitalWrite(MOTOR_DIR_PIN, LOW);
-  setMotorState(MotorState::CLOSING);
+  setMotorState(MotorState::STOPPED);
   targetPercent = currentPercent;
 }
 
@@ -90,9 +90,9 @@ float getCurrentPercent()
   return currentPercent;
 }
 
-void setCurrentPercent(float percent)
+void setTargetPercent(float p)
 {
-  targetPercent = percent;
+  targetPercent = p;
 }
 
 void tickMotion()

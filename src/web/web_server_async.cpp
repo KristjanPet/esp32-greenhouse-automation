@@ -20,17 +20,21 @@ static AsyncWebServer server(80);
 static AsyncEventSource events("/events"); // SSE at /events
 
 // Cached snapshots + change detection (small epsilons)
-static float lastT1=NAN,lastT2=NAN,lastAvg=NAN,lastHum=NAN,lastWind=NAN;
-static bool  lastManual=false;
+static float lastT1 = NAN, lastT2 = NAN, lastAvg = NAN, lastHum = NAN, lastWind = NAN;
+static bool lastManual = false;
 static String lastMotor;
 
-static inline bool changed(float a, float b, float eps){
-  if (isnan(a)!=isnan(b)) return true;
-  if (isnan(a)) return false;
-  return fabsf(a-b) > eps;
+static inline bool changed(float a, float b, float eps)
+{
+  if (isnan(a) != isnan(b))
+    return true;
+  if (isnan(a))
+    return false;
+  return fabsf(a - b) > eps;
 }
 
-void setupWebServerAsync() {
+void setupWebServerAsync()
+{
   // Static files from SPIFFS
   server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.html");
   // If you want explicit routes too:
@@ -40,7 +44,8 @@ void setupWebServerAsync() {
   // SSE endpoint
   server.addHandler(&events);
 
-  server.on("/api/init", HTTP_GET, [](AsyncWebServerRequest *req) {
+  server.on("/api/init", HTTP_GET, [](AsyncWebServerRequest *req)
+            {
         StaticJsonDocument<2048> doc;
 
         // Sensors
@@ -52,19 +57,22 @@ void setupWebServerAsync() {
 
         // Status
         String motorStateString = motorStateStr();
+        float currentMotorPercent = getCurrentPercent();
         printf("Motor state string: %s\n", motorStateString.c_str());
+        printf("Motor percent: %f\n", currentMotorPercent);
         doc["status"]["motorState"] = motorStateString;
+        doc["status"]["motorPercent"] = currentMotorPercent;
 
+        //logs
         JsonArray logArr = doc["logs"].to<JsonArray>();
         appendLogsTo(logArr, 100);
 
         String out; 
         serializeJson(doc, out);
-        req->send(200, "application/json", out);
-    });
+        req->send(200, "application/json", out); });
 
-
-  server.on("/api/thresholds", HTTP_GET, [](AsyncWebServerRequest* req){
+  server.on("/api/thresholds", HTTP_GET, [](AsyncWebServerRequest *req)
+            {
     extern Thresholds currentThresholds;
     StaticJsonDocument<256> doc;
     doc["tempOpen"]    = currentThresholds.tempOpen;
@@ -78,14 +86,12 @@ void setupWebServerAsync() {
     doc["useWindReopen"] = currentThresholds.useWindReopen;
 
     String out; serializeJson(doc, out);
-    req->send(200, "application/json", out);
-  });
+    req->send(200, "application/json", out); });
 
   // --- JSON POST for thresholds (AsyncJson-less but simple) ------------------
   // We’ll read raw body as JSON
-  server.on("/api/thresholds", HTTP_POST, [](AsyncWebServerRequest* request){ /* handled in body cb */ }, 
-    NULL,
-    [](AsyncWebServerRequest* request, uint8_t* data, size_t len, size_t index, size_t total) {
+  server.on("/api/thresholds", HTTP_POST, [](AsyncWebServerRequest *request) { /* handled in body cb */ }, NULL, [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total)
+            {
       // data = raw JSON body
       StaticJsonDocument<512> doc;
       DeserializationError err = deserializeJson(doc, data, len);
@@ -104,90 +110,84 @@ void setupWebServerAsync() {
 
       saveThresholds(); // persist to SPIFFS if you added that earlier
 
-      request->send(200, "text/plain", "Thresholds updated");
-    });
+      request->send(200, "text/plain", "Thresholds updated"); });
 
   // --- Manual motor control via web (guarded by manual lock) ----------------
-  server.on("/api/motor", HTTP_POST, [](AsyncWebServerRequest* request){}, NULL,
-    [](AsyncWebServerRequest* request, uint8_t* data, size_t len, size_t, size_t){
+  server.on("/api/motor", HTTP_POST, [](AsyncWebServerRequest *request) {}, NULL, [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t, size_t)
+            {
       if (manualIsActive()) { request->send(409,"text/plain","Manual override active"); return; }
       StaticJsonDocument<128> doc;
       if (deserializeJson(doc, data, len)) { request->send(400,"text/plain","Invalid JSON"); return; }
-      const char* dir = doc["direction"] | "";
-      MotorState prevState = getMotorState();
-      if (strcmp(dir,"up")==0)   { // use your timed start or direct drive
-        if (isMotorDownActive()) {
-            motorStop();
-            setMotorState(MotorState::STOPPED);
-        } else {
-            motorGoUp();
-            logMove(Trigger::WEBUP, prevState, MotorState::OPENING);
-            setMotorState(MotorState::OPENING);
-        }
-      }
-      else if (strcmp(dir,"down")==0) {
-        if (isMotorUpActive()) {
-            motorStop();
-            setMotorState(MotorState::STOPPED);
-        } else {
-            motorGoDown();
-            logMove(Trigger::WEBDOWN, prevState, MotorState::CLOSING);
-            setMotorState(MotorState::CLOSING);
-        }
-      }
-      request->send(200,"text/plain","ok");
-    });
+      const float dir = doc["direction"] | 0;
+      Serial.println(dir);
+      setTargetPercent(dir);
+      request->send(200,"text/plain","ok"); });
 
   // --- Logs fetch (still HTTP GET; you could also stream over SSE if you like)
-  server.on("/api/logs", HTTP_GET, [](AsyncWebServerRequest* request){
+  server.on("/api/logs", HTTP_GET, [](AsyncWebServerRequest *request)
+            {
     String arr = readLogsJSON(100);
     Serial.println("Logs JSON: " + arr);
-    request->send(200, "application/json", arr);
-  });
+    request->send(200, "application/json", arr); });
 
-  server.onNotFound([](AsyncWebServerRequest* req){
+  server.onNotFound([](AsyncWebServerRequest *req)
+                    {
     Serial.printf("404: %s %s\n", req->methodToString(), req->url().c_str());
-    req->send(404, "text/plain", "Not found");
-  });
+    req->send(404, "text/plain", "Not found"); });
 
   server.begin();
   Serial.println("Async Web server + SSE started on :80");
 }
 
 // ---- SSE push helpers -------------------------------------------------------
-void sseUpdateSensors(float t1, float t2, float avg, float hum, float wind) {
-  const float epsT=0.2f, epsH=1.0f, epsW=0.2f;
+void sseUpdateSensors(float t1, float t2, float avg, float hum, float wind)
+{
+  const float epsT = 0.2f, epsH = 1.0f, epsW = 0.2f;
 
-  if (changed(t1,lastT1,epsT) || changed(t2,lastT2,epsT) ||
-      changed(avg,lastAvg,epsT) || changed(hum,lastHum,epsH) ||
-      changed(wind,lastWind,epsW)) {
+  if (changed(t1, lastT1, epsT) || changed(t2, lastT2, epsT) ||
+      changed(avg, lastAvg, epsT) || changed(hum, lastHum, epsH) ||
+      changed(wind, lastWind, epsW))
+  {
 
-    lastT1=t1; lastT2=t2; lastAvg=avg; lastHum=hum; lastWind=wind;
+    lastT1 = t1;
+    lastT2 = t2;
+    lastAvg = avg;
+    lastHum = hum;
+    lastWind = wind;
 
     StaticJsonDocument<192> doc;
-    doc["temp1"]=t1; doc["temp2"]=t2; doc["avg"]=avg;
-    doc["humidity"]=hum; doc["wind"]=wind;
-    String payload; serializeJson(doc, payload);
+    doc["temp1"] = t1;
+    doc["temp2"] = t2;
+    doc["avg"] = avg;
+    doc["humidity"] = hum;
+    doc["wind"] = wind;
+    String payload;
+    serializeJson(doc, payload);
 
     events.send(payload.c_str(), "sensors", millis()); // event: sensors
   }
 }
 
-void sseUpdateStatus(bool manual, const char* motorState) {
-  if (manual != lastManual || lastMotor != motorState) {
-    lastManual = manual; lastMotor = motorState;
+void sseUpdateStatus(bool manual, const char *motorState)
+{
+  if (manual != lastManual || lastMotor != motorState)
+  {
+    lastManual = manual;
+    lastMotor = motorState;
 
     StaticJsonDocument<128> doc;
     doc["manual"] = manual;
     doc["motorState"] = motorState;
-    String payload; serializeJson(doc, payload);
+    String payload;
+    serializeJson(doc, payload);
 
     events.send(payload.c_str(), "status", millis()); // event: status
   }
 }
 
 // If you want to push logs to clients (e.g., after a new line is appended)
-void ssePushLogs() {
+void ssePushLogs()
+{
   String arr = readLogsJSON(50);
   // wrap as object so client can distinguish
   String out = String("{\"lines\":") + arr + "}";

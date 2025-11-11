@@ -11,7 +11,7 @@ void handleAutoControl(float temp, float temp2, float tempAvg, float humidity, f
   MotorState prevState = getMotorState();
   if (currentThresholds.useTempOpen && tempAvg > currentThresholds.tempOpen)
   {
-    if (prevState != MotorState::OPENING && prevState != MotorState::OPENED)
+    if (prevState != MotorState::OPENING) // TODO
     {
       startMotorUpTimed(motorDuration);
       setMotorState(MotorState::OPENING);
@@ -21,7 +21,7 @@ void handleAutoControl(float temp, float temp2, float tempAvg, float humidity, f
   else if ((currentThresholds.useWindClose && wind > currentThresholds.windClose) ||
            (currentThresholds.useTempClose && tempAvg < currentThresholds.tempClose))
   {
-    if (prevState != MotorState::CLOSING && prevState != MotorState::CLOSED)
+    if (prevState != MotorState::CLOSING)
     {
       startMotorDownTimed(motorDuration);
       setMotorState(MotorState::CLOSING);
@@ -35,7 +35,6 @@ void handleAutoControl(float temp, float temp2, float tempAvg, float humidity, f
   }
   else if (currentThresholds.useWindReopen &&
            wind < currentThresholds.windReopen &&
-           prevState == MotorState::CLOSED &&
            tempAvg <= currentThresholds.tempOpen)
   {
     startMotorUpTimed(motorDuration);
