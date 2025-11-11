@@ -12,7 +12,7 @@
 
 extern Thresholds currentThresholds;
 extern String nowStr();
-extern const char* trigStr(Trigger t);
+extern const char *trigStr(Trigger t);
 
 void logMove(Trigger trig, MotorState prev, MotorState next)
 {
@@ -26,16 +26,17 @@ void logMove(Trigger trig, MotorState prev, MotorState next)
   String strNext = getStateStr(next);
 
   File f = SPIFFS.open("/log.txt", FILE_APPEND);
-  if (!f) return;
+  if (!f)
+    return;
   // CSV-ish line; easy to parse
   String line = nowStr() + "," + trigStr(trig) + "," +
-    strNext + "->" + strPrev + "," +
-    "T=" + String(temp,1) + ",T2=" + String(temp2,1) + ",TAvg=" +
-    String(tempAvg,1) + ",H=" + String(hum,1) + ",W=" + String(wind,1) + "," +
-    "TOpen=" + String(currentThresholds.tempOpen,1) + ",TClose=" + String(currentThresholds.tempClose,1) +
-    ",WClose=" + String(currentThresholds.windClose,1) + ",WReopen=" + String(currentThresholds.windReopen,1) +
-    ",UseTOpen=" + currentThresholds.useTempOpen + ",UseTClose=" + currentThresholds.useTempClose +
-    ",UseWClose=" + currentThresholds.useWindClose + ",UseWReopen=" + currentThresholds.useWindReopen + "\n";
+                strNext + "->" + strPrev + "," +
+                "T=" + String(temp, 1) + ",T2=" + String(temp2, 1) + ",TAvg=" +
+                String(tempAvg, 1) + ",H=" + String(hum, 1) + ",W=" + String(wind, 1) + "," +
+                "TOpen=" + String(currentThresholds.tempOpen, 1) + ",TClose=" + String(currentThresholds.tempClose, 1) +
+                ",WClose=" + String(currentThresholds.windClose, 1) + ",WReopen=" + String(currentThresholds.windReopen, 1) +
+                ",UseTOpen=" + currentThresholds.useTempOpen + ",UseTClose=" + currentThresholds.useTempClose +
+                ",UseWClose=" + currentThresholds.useWindClose + ",UseWReopen=" + currentThresholds.useWindReopen + "\n";
   f.print(line);
   f.close();
   trimLogIfNeeded(200);
@@ -43,12 +44,19 @@ void logMove(Trigger trig, MotorState prev, MotorState next)
   ssePushLogs();
 }
 
-void trimLogIfNeeded(int maxLines){
-  File f = SPIFFS.open("/log.txt", FILE_READ); if (!f) return;
+void trimLogIfNeeded(int maxLines)
+{
+  File f = SPIFFS.open("/log.txt", FILE_READ);
+  if (!f)
+    return;
   // Count lines quickly
-  int lines = 0; while(f.available()) if (f.read()=='\n') lines++;
+  int lines = 0;
+  while (f.available())
+    if (f.read() == '\n')
+      lines++;
   f.close();
-  if (lines <= maxLines) return;
+  if (lines <= maxLines)
+    return;
 
   // Keep last maxLines: read all, drop head
   f = SPIFFS.open("/log.txt", FILE_READ);
@@ -57,29 +65,40 @@ void trimLogIfNeeded(int maxLines){
 
   int keepStart = 0;
   int toDrop = lines - maxLines;
-  for (int i = 0; i < toDrop; i++) {
+  for (int i = 0; i < toDrop; i++)
+  {
     int pos = content.indexOf('\n', keepStart);
-    if (pos < 0) break;
+    if (pos < 0)
+      break;
     keepStart = pos + 1;
   }
 
   File w = SPIFFS.open("/log.txt", FILE_WRITE);
-  if (!w) return;
+  if (!w)
+    return;
   w.print(content.substring(keepStart));
   w.close();
 }
 
-String readLogsJSON(int maxLines){
+String readLogsJSON(int maxLines)
+{
   File f = SPIFFS.open("/log.txt", FILE_READ);
-  DynamicJsonDocument doc(8192);                // v7 style
+  DynamicJsonDocument doc(8192); // v7 style
   JsonArray arr = doc.to<JsonArray>();
-  if (!f) { String out; serializeJson(arr, out); return out; }
+  if (!f)
+  {
+    String out;
+    serializeJson(arr, out);
+    return out;
+  }
 
   std::vector<String> lines;
   lines.reserve(maxLines + 16);
-  while (f.available()){
+  while (f.available())
+  {
     String line = f.readStringUntil('\n');
-    if (line.length()) lines.push_back(line);
+    if (line.length())
+      lines.push_back(line);
   }
   f.close();
 
@@ -87,23 +106,29 @@ String readLogsJSON(int maxLines){
   const int start = total > maxLines ? (total - maxLines) : 0;
 
   // push NEWEST first
-  for (int i = total - 1; i >= start; --i) {
+  for (int i = total - 1; i >= start; --i)
+  {
     arr.add(lines[i]);
   }
 
-  String out; serializeJson(doc, out); 
+  String out;
+  serializeJson(doc, out);
   return out;
 }
 
-void appendLogsTo(JsonArray arr, int maxLines) {
+void appendLogsTo(JsonArray arr, int maxLines)
+{
   File f = SPIFFS.open("/log.txt", FILE_READ);
-  if (!f) return;
+  if (!f)
+    return;
 
   std::vector<String> lines;
   lines.reserve(maxLines + 16);
-  while (f.available()) {
+  while (f.available())
+  {
     String line = f.readStringUntil('\n');
-    if (line.length()) lines.push_back(line);
+    if (line.length())
+      lines.push_back(line);
   }
   f.close();
 
@@ -111,25 +136,38 @@ void appendLogsTo(JsonArray arr, int maxLines) {
   const int start = total > maxLines ? (total - maxLines) : 0;
 
   // push NEWEST first
-  for (int i = total - 1; i >= start; --i) {
+  for (int i = total - 1; i >= start; --i)
+  {
     arr.add(lines[i]);
   }
 }
 
-String nowStr(){
-  struct tm t; if (!getLocalTime(&t)) return "1970-01-01 00:00:00";
-  char buf[20]; strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", &t);
+String nowStr()
+{
+  struct tm t;
+  if (!getLocalTime(&t))
+    return "1970-01-01 00:00:00";
+  char buf[20];
+  strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", &t);
   return String(buf);
 }
 
-const char* trigStr(Trigger t) {
-  switch(t){
-    case Trigger::WEBDOWN: return "web_down";
-    case Trigger::WEBUP: return "web_up";
-    case Trigger::MANUALDOWN: return "manual_down";
-    case Trigger::MANUALUP: return "manual_up";
-    case Trigger::AUTO_TEMP: return "auto_temp";
-    case Trigger::AUTO_WIND: return "auto_wind";
+const char *trigStr(Trigger t)
+{
+  switch (t)
+  {
+  case Trigger::WEBDOWN:
+    return "web_down";
+  case Trigger::WEBUP:
+    return "web_up";
+  case Trigger::MANUALDOWN:
+    return "manual_down";
+  case Trigger::MANUALUP:
+    return "manual_up";
+  case Trigger::AUTO_TEMP:
+    return "auto_temp";
+  case Trigger::AUTO_WIND:
+    return "auto_wind";
   }
   return "unknown";
 }

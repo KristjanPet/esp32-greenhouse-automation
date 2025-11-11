@@ -4,9 +4,7 @@ enum class MotorState
 {
     STOPPED,
     OPENING,
-    CLOSING,
-    OPENED,
-    CLOSED
+    CLOSING
 };
 
 void setupMotorPins();
@@ -16,7 +14,6 @@ void motorStop();
 bool isMotorUpActive();
 bool isMotorDownActive();
 
-void updateMotorTimer(); // call this from loop()
 void startMotorUpTimed(unsigned long durationMs);
 void startMotorDownTimed(unsigned long durationMs);
 

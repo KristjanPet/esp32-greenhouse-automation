@@ -81,7 +81,6 @@ void loop()
   unsigned long currentMillis = millis();
 
   ArduinoOTA.handle();
-  updateMotorTimer();
   manualTick();
   tickMotion();
 

@@ -29,6 +29,8 @@ void setupMotorPins()
 
 void motorGoUp()
 {
+  setMotorState(MotorState::OPENING);
+  lastTs = millis();
   motorStop();
   delay(100);
   digitalWrite(MOTOR_DIR_PIN, HIGH);
@@ -39,6 +41,8 @@ void motorGoUp()
 
 void motorGoDown()
 {
+  setMotorState(MotorState::CLOSING);
+  lastTs = millis();
   motorStop();
   delay(100);
   digitalWrite(LEFT_MOTOR_ON_PIN, HIGH);
@@ -51,6 +55,8 @@ void motorStop()
   digitalWrite(RIGHT_MOTOR_ON_PIN, LOW);
   delay(100);
   digitalWrite(MOTOR_DIR_PIN, LOW);
+  setMotorState(MotorState::CLOSING);
+  targetPercent = currentPercent;
 }
 
 bool isMotorUpActive()
@@ -77,6 +83,16 @@ void startMotorDownTimed(unsigned long durationMs)
   motorTimerStart = millis();
   motorRunDuration = durationMs;
   motorTimerActive = true;
+}
+
+float getCurrentPercent()
+{
+  return currentPercent;
+}
+
+void setCurrentPercent(float percent)
+{
+  targetPercent = percent;
 }
 
 void tickMotion()
@@ -118,20 +134,6 @@ void tickMotion()
   currentPercent = constrain(currentPercent, 0.f, 100.f);
 }
 
-void updateMotorTimer()
-{
-  if (motorTimerActive && millis() - motorTimerStart >= motorRunDuration)
-  {
-    motorStop();
-    motorTimerActive = false;
-
-    if (motorState == MotorState::OPENING)
-      motorState = MotorState::OPENED;
-    else if (motorState == MotorState::CLOSING)
-      motorState = MotorState::CLOSED;
-  }
-}
-
 void setMotorState(MotorState s) { motorState = s; }
 MotorState getMotorState() { return motorState; }
 
@@ -139,16 +141,12 @@ const char *motorStateStr()
 {
   switch (motorState)
   {
-  case MotorState::OPENED:
-    return "odprto";
-  case MotorState::CLOSED:
-    return "zaprto";
   case MotorState::OPENING:
     return "odpira se";
   case MotorState::CLOSING:
     return "zapira se";
   default:
-    return "ročno premaknjeno";
+    return "";
   }
 }
 
@@ -162,10 +160,6 @@ const char *getStateStr(MotorState t)
     return "Opening";
   case MotorState::CLOSING:
     return "Closing";
-  case MotorState::OPENED:
-    return "Opened";
-  case MotorState::CLOSED:
-    return "Closed";
   }
   return "unknown";
 }
