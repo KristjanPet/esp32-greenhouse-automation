@@ -1,3 +1,6 @@
+const slider = document.getElementById("myRange");
+const btnRange = document.getElementById("btnRange");
+
 async function initPage() {
   try {
     const res = await fetch("/api/init");
@@ -12,7 +15,11 @@ async function initPage() {
     document.getElementById("wind").textContent = d.sensors.wind.toFixed(1);
 
     // status
-    document.getElementById("motorState").textContent = d.status.motorState;
+    document.getElementById("motorState").textContent =
+      d.status.motorState + d.status.motorPercent + "%";
+
+    slider.value = d.status.motorPercent;
+    btnRange.textContent = d.status.motorPercent + "%";
 
     //trhresholds
     await loadThresholds();
@@ -132,10 +139,12 @@ async function loadThresholds() {
   }
 }
 
-const slider = document.getElementById("myRange");
-const button = document.getElementById("btnRange");
+btnRange.onclick = function () {
+  const value = parseInt(slider.value, 10);
+  sendMotorCommand(value);
+};
 
 // Update button text when slider moves
 slider.oninput = function () {
-  button.textContent = this.value + "%";
+  btnRange.textContent = this.value + "%";
 };
