@@ -31,7 +31,8 @@ void motorGoUp()
 {
   setMotorState(MotorState::OPENING);
   lastTs = millis();
-  motorStop();
+  digitalWrite(LEFT_MOTOR_ON_PIN, LOW);
+  digitalWrite(RIGHT_MOTOR_ON_PIN, LOW);
   delay(100);
   digitalWrite(MOTOR_DIR_PIN, HIGH);
   delay(100);
@@ -43,7 +44,10 @@ void motorGoDown()
 {
   setMotorState(MotorState::CLOSING);
   lastTs = millis();
-  motorStop();
+  digitalWrite(LEFT_MOTOR_ON_PIN, LOW);
+  digitalWrite(RIGHT_MOTOR_ON_PIN, LOW);
+  delay(100);
+  digitalWrite(MOTOR_DIR_PIN, LOW);
   delay(100);
   digitalWrite(LEFT_MOTOR_ON_PIN, HIGH);
   digitalWrite(RIGHT_MOTOR_ON_PIN, HIGH);
@@ -95,6 +99,20 @@ void setTargetPercent(float p)
   targetPercent = p;
 }
 
+void moveLogic()
+{
+  if (targetPercent > currentPercent && motorState == MotorState::STOPPED)
+  {
+    motorGoUp();
+    Serial.println("motor up started");
+  }
+  else if (targetPercent < currentPercent && motorState == MotorState::STOPPED)
+  {
+    motorGoDown();
+    Serial.println("motor down started");
+  }
+}
+
 void tickMotion()
 {
   float movingRate = 100.0 / motorDuration; // % per ms
@@ -104,6 +122,8 @@ void tickMotion()
   lastTs = now;
   static float lastPrintPercent = -1; // only for print time
 
+  moveLogic();
+
   if (motorState == MotorState::OPENING)
   {
     currentPercent += dt * movingRate;
@@ -112,7 +132,7 @@ void tickMotion()
       Serial.printf("%.2f%%\n", currentPercent);
       lastPrintPercent = currentPercent;
     }
-    if (currentPercent >= targetPercent - eps || currentPercent == 100.0)
+    if (currentPercent >= targetPercent - eps || currentPercent >= 100.0)
     {
       motorStop();
     }
@@ -125,7 +145,7 @@ void tickMotion()
       Serial.printf("%.2f%%\n", currentPercent);
       lastPrintPercent = currentPercent;
     }
-    if (currentPercent <= targetPercent + eps || currentPercent == 0.0)
+    if (currentPercent <= targetPercent + eps || currentPercent <= 0.0)
     {
       motorStop();
     }
