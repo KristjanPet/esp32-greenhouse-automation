@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <cmath>
 #include "motor_control.h"
 #include "../include/secrets.h"
 
@@ -91,7 +92,7 @@ void startMotorDownTimed(unsigned long durationMs)
 
 float getCurrentPercent()
 {
-  return currentPercent;
+  return std::round(currentPercent);
 }
 
 void setTargetPercent(float p)

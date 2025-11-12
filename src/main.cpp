@@ -88,22 +88,17 @@ void loop()
   {
     lastPrintTime = currentMillis;
 
-    float temp1 = getTemperatureC();
-    float temp2 = getTemperature2C();
-    float avgTemp = (temp1 + temp2) / 2.0;
-    float humidity = getHumidity();
     updateWindSpeedBuffer(getWindSpeed());
-    float windSpeed = getAverageWindSpeed();
 
-    updateSensorsCache(temp1, temp2, avgTemp, humidity, windSpeed);
+    updateSensorsCache();
     updateStatusCache(manualIsActive(), motorStateStr());
 
     if (!manualIsActive())
     { // pause automation while any button is held
-      handleAutoControl(temp1, temp2, avgTemp, humidity, windSpeed);
+      handleAutoControl();
     }
 
-    sseUpdateSensors(temp1, temp2, avgTemp, humidity, windSpeed);
+    sseUpdateSensors();
     sseUpdateStatus(manualIsActive(), motorStateStr());
   }
 }

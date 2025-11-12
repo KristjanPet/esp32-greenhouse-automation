@@ -4,41 +4,44 @@
 #include "motor_control.h"
 #include "logger.h"
 #include "../include/secrets.h"
+#include <temp_sensor.h>
+#include <temp_sensor_2.h>
+#include <wind_sensor.h>
 
-void handleAutoControl(float temp, float temp2, float tempAvg, float humidity, float wind)
+void handleAutoControl()
 {
+  float currentPercent = getCurrentPercent();
+  float temp1 = getTemperatureC();
+  float temp2 = getTemperature2C();
+  float tempAvg = (temp1 + temp2) / 2.0;
+  float humidity = getHumidity();
+  float wind = getAverageWindSpeed();
 
   MotorState prevState = getMotorState();
-  if (currentThresholds.useTempOpen && tempAvg > currentThresholds.tempOpen)
+  // Temp OPEN
+  if (currentThresholds.useTempOpen && tempAvg > currentThresholds.tempOpen && prevState != MotorState::OPENING && currentPercent < 95)
   {
-    if (prevState != MotorState::OPENING) // TODO
+    setTargetPercent(100);
+  }
+  // Wind || temp CLOSE
+  else if (((currentThresholds.useWindClose && wind > currentThresholds.windClose) ||
+            (currentThresholds.useTempClose && tempAvg < currentThresholds.tempClose)) &&
+           prevState != MotorState::CLOSING && currentPercent > 5)
+  {
+    setTargetPercent(0);
+    if (wind > currentThresholds.windClose)
+      logMove(Trigger::AUTO_WIND, prevState, MotorState::CLOSING);
+    else
     {
-      startMotorUpTimed(motorDuration);
-      setMotorState(MotorState::OPENING);
-      logMove(Trigger::AUTO_TEMP, prevState, MotorState::OPENING);
+      logMove(Trigger::AUTO_TEMP, prevState, MotorState::CLOSING);
     }
   }
-  else if ((currentThresholds.useWindClose && wind > currentThresholds.windClose) ||
-           (currentThresholds.useTempClose && tempAvg < currentThresholds.tempClose))
-  {
-    if (prevState != MotorState::CLOSING)
-    {
-      startMotorDownTimed(motorDuration);
-      setMotorState(MotorState::CLOSING);
-      if (wind > currentThresholds.windClose)
-        logMove(Trigger::AUTO_WIND, prevState, MotorState::CLOSING);
-      else
-      {
-        logMove(Trigger::AUTO_TEMP, prevState, MotorState::CLOSING);
-      }
-    }
-  }
+  // wind REOPEN
   else if (currentThresholds.useWindReopen &&
            wind < currentThresholds.windReopen &&
-           tempAvg <= currentThresholds.tempOpen)
+           ((currentThresholds.useTempClose && tempAvg > currentThresholds.tempClose) || !currentThresholds.useTempClose))
   {
-    startMotorUpTimed(motorDuration);
-    setMotorState(MotorState::OPENING);
+    setTargetPercent(100);
     logMove(Trigger::AUTO_WIND, prevState, MotorState::OPENING);
   }
 }
