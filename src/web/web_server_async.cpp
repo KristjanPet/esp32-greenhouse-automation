@@ -140,9 +140,15 @@ void setupWebServerAsync()
 }
 
 // ---- SSE push helpers -------------------------------------------------------
-void sseUpdateSensors(float t1, float t2, float avg, float hum, float wind)
+void sseUpdateSensors()
 {
   const float epsT = 0.2f, epsH = 1.0f, epsW = 0.2f;
+
+  float t1 = getTemperatureC();
+  float t2 = getTemperature2C();
+  float avg = (t1 + t2) / 2.0;
+  float hum = getHumidity();
+  float wind = getAverageWindSpeed();
 
   if (changed(t1, lastT1, epsT) || changed(t2, lastT2, epsT) ||
       changed(avg, lastAvg, epsT) || changed(hum, lastHum, epsH) ||
