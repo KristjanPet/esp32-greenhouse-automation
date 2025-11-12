@@ -83,7 +83,7 @@
 
           es.addEventListener('status', (e) => {
             const d = JSON.parse(e.data);
-            document.getElementById('motorState').textContent = d.motorState || '--';
+            document.getElementById('motorState').textContent = d.motorState || d.motorPercent + "%";
 
             const btns = document.querySelectorAll('.motor-btn');
             btns.forEach(b => b.disabled = !!d.manual);

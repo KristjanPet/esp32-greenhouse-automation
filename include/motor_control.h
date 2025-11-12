@@ -11,6 +11,7 @@ void setupMotorPins();
 void motorGoUp();
 void motorGoDown();
 void motorStop();
+void moveLogic();
 bool isMotorUpActive();
 bool isMotorDownActive();
 

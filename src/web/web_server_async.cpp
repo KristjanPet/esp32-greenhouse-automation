@@ -178,6 +178,10 @@ void sseUpdateStatus(bool manual, const char *motorState)
     StaticJsonDocument<128> doc;
     doc["manual"] = manual;
     doc["motorState"] = motorState;
+    if (motorState == "")
+    {
+      doc["motorPercent"] = getCurrentPercent();
+    }
     String payload;
     serializeJson(doc, payload);
 
