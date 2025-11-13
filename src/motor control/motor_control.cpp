@@ -2,6 +2,7 @@
 #include <cmath>
 #include "motor_control.h"
 #include "../include/secrets.h"
+#include "logger.h"
 
 const int MOTOR_DIR_PIN = 14;      // Pin for motor direction (up/down)
 const int LEFT_MOTOR_ON_PIN = 26;  // Pin for left motor on/off
@@ -17,6 +18,7 @@ static float targetPercent = NAN;
 uint32_t lastTs = 0;
 
 MotorState motorState = MotorState::STOPPED; // Global motor state variable
+Trigger pendingTrigger = Trigger::NONE;
 
 void setupMotorPins()
 {
@@ -61,33 +63,14 @@ void motorStop()
   delay(100);
   digitalWrite(MOTOR_DIR_PIN, LOW);
   setMotorState(MotorState::STOPPED);
+
+  if (pendingTrigger != Trigger::NONE)
+  {
+    logMove(pendingTrigger);
+    pendingTrigger = Trigger::NONE;
+  }
+
   targetPercent = currentPercent;
-}
-
-bool isMotorUpActive()
-{
-  return digitalRead(MOTOR_DIR_PIN) == HIGH && digitalRead(RIGHT_MOTOR_ON_PIN) == HIGH;
-}
-
-bool isMotorDownActive()
-{
-  return digitalRead(MOTOR_DIR_PIN) == LOW && digitalRead(RIGHT_MOTOR_ON_PIN) == HIGH;
-}
-
-void startMotorUpTimed(unsigned long durationMs)
-{
-  motorGoUp();
-  motorTimerStart = millis();
-  motorRunDuration = durationMs;
-  motorTimerActive = true;
-}
-
-void startMotorDownTimed(unsigned long durationMs)
-{
-  motorGoDown();
-  motorTimerStart = millis();
-  motorRunDuration = durationMs;
-  motorTimerActive = true;
 }
 
 float getCurrentPercent()
@@ -98,6 +81,11 @@ float getCurrentPercent()
 void setTargetPercent(float p)
 {
   targetPercent = p;
+}
+
+void setPendingTrigger(Trigger t)
+{
+  pendingTrigger = t;
 }
 
 void moveLogic()
@@ -169,18 +157,4 @@ const char *motorStateStr()
   default:
     return "";
   }
-}
-
-const char *getStateStr(MotorState t)
-{
-  switch (t)
-  {
-  case MotorState::STOPPED:
-    return "Stopped";
-  case MotorState::OPENING:
-    return "Opening";
-  case MotorState::CLOSING:
-    return "Closing";
-  }
-  return "unknown";
 }

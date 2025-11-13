@@ -78,32 +78,21 @@ void manualTick()
       if (upStable)
       {
         manualDir = ManualDir::UP;
+        setPendingTrigger(Trigger::MANUAL);
         setTargetPercent(100);
-        logMove(Trigger::MANUALUP, prevState, getMotorState());
       }
       else
       {
         manualDir = ManualDir::DOWN;
+        setPendingTrigger(Trigger::MANUAL);
         setTargetPercent(0);
-        logMove(Trigger::MANUALDOWN, prevState, getMotorState());
       }
     }
-    else
+    else if ((manualDir == ManualDir::UP && !upStable) || (manualDir == ManualDir::DOWN && !downStable))
     {
-      if (manualDir == ManualDir::UP && !upStable)
-      {
-        setTargetPercent(getCurrentPercent());
-        manualActive = false;
-        manualDir = ManualDir::NONE;
-        logMove(Trigger::MANUALUP, prevState, getMotorState());
-      }
-      else if (manualDir == ManualDir::DOWN && !downStable)
-      {
-        setTargetPercent(getCurrentPercent());
-        manualActive = false;
-        manualDir = ManualDir::NONE;
-        logMove(Trigger::MANUALDOWN, prevState, getMotorState());
-      }
+      setTargetPercent(getCurrentPercent());
+      manualActive = false;
+      manualDir = ManualDir::NONE;
     }
   }
   else if (manualActive)

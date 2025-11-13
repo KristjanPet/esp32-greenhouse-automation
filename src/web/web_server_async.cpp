@@ -120,6 +120,7 @@ void setupWebServerAsync()
       if (deserializeJson(doc, data, len)) { request->send(400,"text/plain","Invalid JSON"); return; }
       const float dir = doc["direction"] | 0;
       Serial.println(dir);
+      setPendingTrigger(Trigger::WEB);
       setTargetPercent(dir);
       request->send(200,"text/plain","ok"); });
 

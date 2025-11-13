@@ -14,134 +14,172 @@ extern Thresholds currentThresholds;
 extern String nowStr();
 extern const char *trigStr(Trigger t);
 
-void logMove(Trigger trig, MotorState prev, MotorState next)
+static const char *LOG_FILE = "/log.json";
+
+// ---------------------------------------------------------------------------
+// Load full JSON array (or empty array if file missing)
+// ---------------------------------------------------------------------------
+static bool loadFullLog(DynamicJsonDocument &doc)
+{
+  if (!SPIFFS.exists(LOG_FILE))
+  {
+    doc.to<JsonArray>();
+    return false;
+  }
+
+  File f = SPIFFS.open(LOG_FILE, FILE_READ);
+  if (!f)
+  {
+    doc.to<JsonArray>();
+    return false;
+  }
+
+  DeserializationError err = deserializeJson(doc, f);
+  f.close();
+
+  if (err)
+  {
+    doc.to<JsonArray>();
+    return false;
+  }
+
+  if (!doc.is<JsonArray>())
+  {
+    doc.to<JsonArray>();
+  }
+  return true;
+}
+
+// ---------------------------------------------------------------------------
+// Save full array back to file
+// ---------------------------------------------------------------------------
+static void saveFullLog(DynamicJsonDocument &doc)
+{
+  File f = SPIFFS.open(LOG_FILE, FILE_WRITE);
+  if (!f)
+    return;
+  serializeJson(doc, f);
+  f.close();
+}
+
+// ---------------------------------------------------------------------------
+// Trim log to last maxLines entries
+// ---------------------------------------------------------------------------
+void trimLogIfNeeded(int maxLines)
+{
+  DynamicJsonDocument doc(10000);
+  loadFullLog(doc);
+  JsonArray arr = doc.as<JsonArray>();
+
+  int total = arr.size();
+  if (total <= maxLines)
+    return;
+
+  int start = total - maxLines;
+
+  DynamicJsonDocument newDoc(10000);
+  JsonArray newArr = newDoc.to<JsonArray>();
+
+  for (int i = start; i < total; i++)
+  {
+    newArr.add(arr[i]);
+  }
+
+  saveFullLog(newDoc);
+}
+
+// ---------------------------------------------------------------------------
+// Append one log entry as JSON
+// ---------------------------------------------------------------------------
+void logMove(Trigger trig)
 {
   float temp = getTemperatureC();
   float temp2 = getTemperature2C();
-  float tempAvg = (temp + temp2) / 2.0;
+  float tempAvg = (temp + temp2) / 2.0f;
   float hum = getHumidity();
   float wind = getAverageWindSpeed();
 
-  String strPrev = getStateStr(prev);
-  String strNext = getStateStr(next);
+  float state = getCurrentPercent();
 
-  File f = SPIFFS.open("/log.txt", FILE_APPEND);
-  if (!f)
-    return;
-  // CSV-ish line; easy to parse
-  String line = nowStr() + "," + trigStr(trig) + "," +
-                strNext + "->" + strPrev + "," +
-                "T=" + String(temp, 1) + ",T2=" + String(temp2, 1) + ",TAvg=" +
-                String(tempAvg, 1) + ",H=" + String(hum, 1) + ",W=" + String(wind, 1) + "," +
-                "TOpen=" + String(currentThresholds.tempOpen, 1) + ",TClose=" + String(currentThresholds.tempClose, 1) +
-                ",WClose=" + String(currentThresholds.windClose, 1) + ",WReopen=" + String(currentThresholds.windReopen, 1) +
-                ",UseTOpen=" + currentThresholds.useTempOpen + ",UseTClose=" + currentThresholds.useTempClose +
-                ",UseWClose=" + currentThresholds.useWindClose + ",UseWReopen=" + currentThresholds.useWindReopen + "\n";
-  f.print(line);
-  f.close();
+  DynamicJsonDocument doc(12000);
+  loadFullLog(doc);
+  JsonArray arr = doc.as<JsonArray>();
+
+  JsonObject o = arr.createNestedObject();
+  o["timestamp"] = nowStr();
+  o["trigger"] = trigStr(trig);
+  o["state"] = state;
+
+  JsonObject sensors = o.createNestedObject("sensors");
+  sensors["T"] = temp;
+  sensors["T2"] = temp2;
+  sensors["TAvg"] = tempAvg;
+  sensors["H"] = hum;
+  sensors["W"] = wind;
+
+  JsonObject thr = o.createNestedObject("thresholds");
+  thr["TOpen"] = currentThresholds.tempOpen;
+  thr["TClose"] = currentThresholds.tempClose;
+  thr["WClose"] = currentThresholds.windClose;
+  thr["WReopen"] = currentThresholds.windReopen;
+  thr["UseTOpen"] = currentThresholds.useTempOpen;
+  thr["UseTClose"] = currentThresholds.useTempClose;
+  thr["UseWClose"] = currentThresholds.useWindClose;
+  thr["UseWReopen"] = currentThresholds.useWindReopen;
+
+  saveFullLog(doc);
+
   trimLogIfNeeded(200);
   bumpLogsVersion();
   ssePushLogs();
 }
 
-void trimLogIfNeeded(int maxLines)
-{
-  File f = SPIFFS.open("/log.txt", FILE_READ);
-  if (!f)
-    return;
-  // Count lines quickly
-  int lines = 0;
-  while (f.available())
-    if (f.read() == '\n')
-      lines++;
-  f.close();
-  if (lines <= maxLines)
-    return;
-
-  // Keep last maxLines: read all, drop head
-  f = SPIFFS.open("/log.txt", FILE_READ);
-  String content = f.readString();
-  f.close();
-
-  int keepStart = 0;
-  int toDrop = lines - maxLines;
-  for (int i = 0; i < toDrop; i++)
-  {
-    int pos = content.indexOf('\n', keepStart);
-    if (pos < 0)
-      break;
-    keepStart = pos + 1;
-  }
-
-  File w = SPIFFS.open("/log.txt", FILE_WRITE);
-  if (!w)
-    return;
-  w.print(content.substring(keepStart));
-  w.close();
-}
-
+// ---------------------------------------------------------------------------
+// Return last maxLines logs as JSON array string (newest first)
+// ---------------------------------------------------------------------------
 String readLogsJSON(int maxLines)
 {
-  File f = SPIFFS.open("/log.txt", FILE_READ);
-  DynamicJsonDocument doc(8192); // v7 style
-  JsonArray arr = doc.to<JsonArray>();
-  if (!f)
-  {
-    String out;
-    serializeJson(arr, out);
-    return out;
-  }
+  DynamicJsonDocument doc(12000);
+  loadFullLog(doc);
+  JsonArray arr = doc.as<JsonArray>();
 
-  std::vector<String> lines;
-  lines.reserve(maxLines + 16);
-  while (f.available())
-  {
-    String line = f.readStringUntil('\n');
-    if (line.length())
-      lines.push_back(line);
-  }
-  f.close();
+  DynamicJsonDocument outDoc(12000);
+  JsonArray outArr = outDoc.to<JsonArray>();
 
-  const int total = (int)lines.size();
-  const int start = total > maxLines ? (total - maxLines) : 0;
+  int total = arr.size();
+  int start = total > maxLines ? (total - maxLines) : 0;
 
-  // push NEWEST first
-  for (int i = total - 1; i >= start; --i)
+  for (int i = total - 1; i >= start; i--)
   {
-    arr.add(lines[i]);
+    outArr.add(arr[i]);
   }
 
   String out;
-  serializeJson(doc, out);
+  serializeJson(outDoc, out);
   return out;
 }
 
+// ---------------------------------------------------------------------------
+// Append logs into an existing JSON array
+// ---------------------------------------------------------------------------
 void appendLogsTo(JsonArray arr, int maxLines)
 {
-  File f = SPIFFS.open("/log.txt", FILE_READ);
-  if (!f)
-    return;
+  DynamicJsonDocument doc(12000);
+  loadFullLog(doc);
+  JsonArray full = doc.as<JsonArray>();
 
-  std::vector<String> lines;
-  lines.reserve(maxLines + 16);
-  while (f.available())
+  int total = full.size();
+  int start = total > maxLines ? (total - maxLines) : 0;
+
+  for (int i = total - 1; i >= start; i--)
   {
-    String line = f.readStringUntil('\n');
-    if (line.length())
-      lines.push_back(line);
-  }
-  f.close();
-
-  const int total = (int)lines.size();
-  const int start = total > maxLines ? (total - maxLines) : 0;
-
-  // push NEWEST first
-  for (int i = total - 1; i >= start; --i)
-  {
-    arr.add(lines[i]);
+    arr.add(full[i]);
   }
 }
 
+// ---------------------------------------------------------------------------
+// Time & trigger helpers
+// ---------------------------------------------------------------------------
 String nowStr()
 {
   struct tm t;
@@ -156,18 +194,14 @@ const char *trigStr(Trigger t)
 {
   switch (t)
   {
-  case Trigger::WEBDOWN:
-    return "web_down";
-  case Trigger::WEBUP:
-    return "web_up";
-  case Trigger::MANUALDOWN:
-    return "manual_down";
-  case Trigger::MANUALUP:
-    return "manual_up";
+  case Trigger::WEB:
+    return "Splet";
+  case Trigger::MANUAL:
+    return "Gumb";
   case Trigger::AUTO_TEMP:
-    return "auto_temp";
+    return "Auto temp";
   case Trigger::AUTO_WIND:
-    return "auto_wind";
+    return "Auto veter";
   }
-  return "unknown";
+  return "Neznano";
 }

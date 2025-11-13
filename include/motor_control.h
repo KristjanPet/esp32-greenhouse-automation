@@ -12,19 +12,15 @@ void motorGoUp();
 void motorGoDown();
 void motorStop();
 void moveLogic();
-bool isMotorUpActive();
-bool isMotorDownActive();
-
-void startMotorUpTimed(unsigned long durationMs);
-void startMotorDownTimed(unsigned long durationMs);
 
 void setTargetPercent(float p);
 float getCurrentPercent();
 void tickMotion();
 
+void setPendingTrigger(Trigger t);
+
 void setMotorState(MotorState s);
 MotorState getMotorState();
 const char *motorStateStr();
-const char *getStateStr(MotorState t);
 
 extern MotorState motorState; // Global motor state variable

@@ -21,6 +21,7 @@ void handleAutoControl()
   // Temp OPEN
   if (currentThresholds.useTempOpen && tempAvg > currentThresholds.tempOpen && prevState != MotorState::OPENING && currentPercent < 95)
   {
+    setPendingTrigger(Trigger::AUTO_TEMP);
     setTargetPercent(100);
   }
   // Wind || temp CLOSE
@@ -28,20 +29,20 @@ void handleAutoControl()
             (currentThresholds.useTempClose && tempAvg < currentThresholds.tempClose)) &&
            prevState != MotorState::CLOSING && currentPercent > 5)
   {
-    setTargetPercent(0);
     if (wind > currentThresholds.windClose)
-      logMove(Trigger::AUTO_WIND, prevState, MotorState::CLOSING);
+      setPendingTrigger(Trigger::AUTO_WIND);
     else
     {
-      logMove(Trigger::AUTO_TEMP, prevState, MotorState::CLOSING);
+      setPendingTrigger(Trigger::AUTO_TEMP);
     }
+    setTargetPercent(0);
   }
   // wind REOPEN
   else if (currentThresholds.useWindReopen &&
            wind < currentThresholds.windReopen &&
            ((currentThresholds.useTempClose && tempAvg > currentThresholds.tempClose) || !currentThresholds.useTempClose))
   {
+    setPendingTrigger(Trigger::AUTO_WIND);
     setTargetPercent(100);
-    logMove(Trigger::AUTO_WIND, prevState, MotorState::OPENING);
   }
 }
