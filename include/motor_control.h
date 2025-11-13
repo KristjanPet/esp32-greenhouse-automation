@@ -1,11 +1,5 @@
 #pragma once
-
-enum class MotorState
-{
-    STOPPED,
-    OPENING,
-    CLOSING
-};
+#include "types.h"
 
 void setupMotorPins();
 void motorGoUp();

@@ -1,16 +1,8 @@
 #pragma once
 #include "motor_control.h"
+#include "types.h"
 #include <Arduino.h>
 #include <ArduinoJson.h>
-
-enum class Trigger
-{
-    NONE,
-    WEB,
-    MANUAL,
-    AUTO_TEMP,
-    AUTO_WIND
-};
 
 // Log a movement event (JSON log)
 void logMove(Trigger trig);
