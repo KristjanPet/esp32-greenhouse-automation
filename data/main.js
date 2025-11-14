@@ -32,47 +32,34 @@ async function initPage() {
 }
 window.onload = initPage;
 
-function renderLogsToTable(lines) {
+function renderLogsToTable(entries) {
   const tbody = document.querySelector("#logTable tbody");
   if (!tbody) return;
   tbody.innerHTML = "";
 
-  lines.forEach((line) => {
-    const parts = line.split(",");
-    if (parts.length < 3) return;
-    const [timestamp, trigger, transition, ...kvPairs] = parts;
-    const [prevState, newState] = (transition || "").split("->");
-
-    const kv = {};
-    kvPairs.forEach((p) => {
-      const [k, v] = p.split("=");
-      if (k && v !== undefined) kv[k.trim()] = v.trim();
-    });
-    const show = (k, d = 1) => (k in kv ? Number(kv[k]).toFixed(d) : "—");
-
+  entries.forEach((e) => {
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td>${timestamp}</td>
-      <td>${trigger}</td>
-      <td>${newState ?? "—"}</td>
-      <td>${prevState ?? "—"}</td>
-      <td>${show("T")}</td>
-      <td>${show("T2")}</td>
-      <td>${show("TAvg")}</td>
-      <td>${show("H")}</td>
-      <td>${show("W")}</td>
-      <td class="${kv.UseTOpen === "1" ? "active" : "inactive"}">${show(
-      "TOpen"
-    )}</td>
-      <td class="${kv.UseTClose === "1" ? "active" : "inactive"}">${show(
-      "TClose"
-    )}</td>
-      <td class="${kv.UseWClose === "1" ? "active" : "inactive"}">${show(
-      "WClose"
-    )}</td>
-      <td class="${kv.UseWReopen === "1" ? "active" : "inactive"}">${show(
-      "WReopen"
-    )}</td>
+      <td>${e.timestamp}</td>
+      <td>${e.trigger}</td>
+      <td>${e.state?.toFixed(0) + "%" ?? "—"}</td>
+      <td>${e.sensors?.T?.toFixed(1) + " &deg;C" ?? "—"}</td>
+      <td>${e.sensors?.T2?.toFixed(1) + " &deg;C" ?? "—"}</td>
+      <td>${e.sensors?.TAvg?.toFixed(1) + " &deg;C" ?? "—"}</td>
+      <td>${e.sensors?.H?.toFixed(1) + "%" ?? "—"}</td>
+      <td>${e.sensors?.W?.toFixed(1) + " m/s" ?? "—"}</td>
+      <td class="${e.thresholds?.UseTOpen ? "active" : "inactive"}">${
+      e.thresholds?.TOpen ?? "-"
+    }</td>
+      <td class="${e.thresholds?.UseTClose ? "active" : "inactive"}">${
+      e.thresholds?.TClose ?? "-"
+    }</td>
+      <td class="${e.thresholds?.UseWClose ? "active" : "inactive"}">${
+      e.thresholds?.WClose ?? "-"
+    }</td>
+      <td class="${e.thresholds?.UseWReopen ? "active" : "inactive"}">${
+      e.thresholds?.WReopen ?? "-"
+    }</td>
     `;
     tbody.appendChild(tr);
   });

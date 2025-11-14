@@ -186,7 +186,7 @@ String nowStr()
   if (!getLocalTime(&t))
     return "1970-01-01 00:00:00";
   char buf[20];
-  strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", &t);
+  strftime(buf, sizeof(buf), "%H:%M:%S %d.%m.%Y", &t);
   return String(buf);
 }
 
@@ -199,9 +199,9 @@ const char *trigStr(Trigger t)
   case Trigger::MANUAL:
     return "Gumb";
   case Trigger::AUTO_TEMP:
-    return "Auto temp";
+    return "Temperatura";
   case Trigger::AUTO_WIND:
-    return "Auto veter";
+    return "Veter";
   }
   return "Neznano";
 }

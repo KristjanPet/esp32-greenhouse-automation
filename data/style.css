@@ -75,7 +75,7 @@ label {
 /* Optional: style number input next to checkbox */
 input[type="number"] {
   margin-left: 10px;
-  width: 60px;
+  width: 35px;
   padding: 4px;
 }
 
