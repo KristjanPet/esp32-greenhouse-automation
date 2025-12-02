@@ -1,44 +1,68 @@
-# ESP32 Greenhouse Automation
+# 🌱 ESP32 Greenhouse Automation
 
-An ESP32-based system for automating greenhouse ventilation by controlling roll-up film motors, using temperature and wind data.
 
-## Features
-- ESP32 Web Interface
-- Wind speed sensors
-- Temperature-based control logic
-- Relay-controlled motors (2 sides)
-- Powered via shared 24V system with buck converters
+An ESP32-based controller for automatic greenhouse ventilation using temperature, humidity, and wind readings. Motors can be controlled automatically (thresholds), manually (buttons), or via the web interface. All movements are logged directly on the ESP32.
 
-## Components
-- ESP32 DevKit v1 (30-pin)
-- DS18B20 Waterproof Temperature Sensor
-- Analog Wind Speed Sensor (0–5V)
-- 4-Channel Relay Module
-- 24V Motor System
+---
 
-## Branches
-- `web-ui`: Web interface and server logic
-- `temp-sensor`: Temperature readings and logic
-- `wind-sensor`: Wind speed/direction logic
-- `motor-control`: Motor control and relay handling
-- `system-diagram`: Diagrams, wiring, and docs
+## 🔧 Main Features
+- ESP32 DevKit V1 with web interface & automation logic  
+- Average temperature & humidity from **DS18B20** + **DHT11**  
+- Average wind speed from 0–5V wind sensor (ADC + voltage divider)  
+- Two roll-up motors controlled via:
+  - manual buttons  
+  - web interface  
+  - automation thresholds (wind + temperature)
+- All actions stored in onboard log (`log.json`)
+- Power system:
+  - **230V → 24V** (motors)
+  - **24V → 5V** (ESP32 + relays)
+  - **24V → 12V** (wind sensor)
 
-## 🔌 Wiring Pinout
+---
 
-Below is the wiring layout for sensors and modules connected to the ESP32 board.
+## 🧩 ESP32 Pin Assignments
 
-| Component              | ESP32 GPIO     | Notes                                                                 |
+| Component              | ESP32     | Notes                                                                 |
 |------------------------|----------------|------------------------------------------------------------------------|
-| **DHT11** (temp + humidity) | GPIO 4         | Connect to 3.3V, GND and data pin. Pull-up resistor is built into the module. |
-| **DS18B20** (waterproof)    | GPIO 5         | 3.3V or 5V power, GND, data pin (pull-up resistor is onboard)          |
-| **Wind Sensor** (analog)    | GPIO 34 (A0)   | Analog 0–5V input → use voltage divider to scale to 0–3.3V             |
-| **Relay Module** (4-channel)| GPIO 16–19     | Define as needed – each GPIO controls one relay                        |
-| **OLED Display** (I2C)      | GPIO 21 (SDA), GPIO 22 (SCL) | You can configure these pins in the code                            |
+| **DHT11** (temp + humidity) | GPIO 4         | 3.3V powered, built-in pull-up |
+| **DS18B20** (temp)    | GPIO 5         | 3.3V power      |
+| **Wind Sensor** (analog)    | GPIO 34 (A0)   | 0–5V scaled to 0–3.3V using 1.8k + 3.6k divider             |
+| **Relay Module** (4-channel)| GPIO 14, 26, 27     | **14** = Direction (SW1 & SW2), **27** = Motor 1 (SW3), **26** = Motor 2 (SW4)                       |
 | **ESP32 VIN** (power input) | 5V             | Connect from buck converter (24V → 5V)                                 |
+| **Manual buttons** (2x up/0/down)| GPIO 13, 14, 17, 18     | 13, 14 Motor 1 (up, down), 17, 18 Motor 2 (up, down), wired to GND (internal pull-ups)                       |
 
-### ⚠️ Notes:
+All modules share a common GND.
 
-- All **GND connections must be shared** (sensors, ESP32, power).
-- If you’re using those infamous "China jumper wires" – double check the ground line. A loose GND will cause phantom 85.00 °C readings.
-- The DS18B20 must be detected via `sensors.getDeviceCount() == 1`, or it means wiring or power is wrong.
-- DHT11 modules typically include their own pull-up resistor, so no need to add one manually.
+---
+
+## 📐 System Schematic
+<img width="1190" height="845" alt="SCH_Main_1-P1_2025-12-02" src="https://github.com/user-attachments/assets/79e0fbdd-ec0a-4c37-b56c-702cf26bf52d" />
+
+## 🧠 Program Architecture
+<img width="1118" height="894" alt="architecture" src="https://github.com/user-attachments/assets/e9a6e672-17f8-450c-9936-d92533b930a3" />
+
+
+## 🧾 Bill of Materials (BOM)
+
+| Item | Price |
+|------|-------|
+| M8 Sensor Connector 4-pin (female) | € 3.44 |
+| M8 Sensor Connector 3-pin (female) | € 3.18 |
+| M12 4-pin Socket (female) | € 2.77 |
+| Waterproof Connector SP11 2-pin set | € 5.45 |
+| IP65 Distribution Box HT-12WAY | € 24.23 |
+| OMCH M12 4-pin PVC Male Cable 5m | € 7.29 |
+| Waterproof IP67 M8 Solder Connector | € 7.24 |
+| Relay Module 4-channel 5V | € 3.85 |
+| Buck Converter 10–80V → 5V 1A | € 5.42 |
+| 3-Cup Anemometer RS485 (0–5V Output) | € 25.29 |
+| ESP32 Micro-Board | € 7.80 |
+| DS18B20 Temperature Sensor Kit | € 4.05 |
+| Electric Film Roller Motor Set (2x) | € 187.86 |
+| Buck Module 15–50V → 12V 3A | € 4.71 |
+| DHT11 Temperature Sensor Module | € 1.16 |
+| Cable Clips / "Sponke" | € 6.00 |
+| Super-thin AC/DC Transformer 230V → 24V 300W | € 12.59 |
+
+---
