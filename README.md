@@ -1,7 +1,7 @@
 # 🌱 ESP32 Greenhouse Automation
 
 
-An ESP32-based controller for automatic greenhouse ventilation using temperature, humidity, and wind readings. Motors can be controlled automatically (thresholds), manually (buttons), or via the web interface. All movements are logged directly on the ESP32.
+An ESP32-based controller for automatic greenhouse ventilation using temperature, humidity, and wind readings. Motors can be controlled automatically (thresholds), manually (buttons), or via the web interface. All movements are logged directly on the ESP32 and displayed on the web interface, together with temperature, humidity, wind speed, and motor states.
 
 ---
 
@@ -13,6 +13,7 @@ An ESP32-based controller for automatic greenhouse ventilation using temperature
   - manual buttons  
   - web interface  
   - automation thresholds (wind + temperature)
+- Motor position/state is calculated from the configured time between fully open and fully closed, which must be entered manually
 - All actions stored in onboard log (`log.json`)
 - Power system:
   - **230V → 24V** (motors)
