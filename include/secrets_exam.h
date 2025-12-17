@@ -5,7 +5,7 @@
 static const char *WIFI_SSID = "";
 static const char *WIFI_PASSWORD = "";
 
-const unsigned long sensorReadInterval = 1500; // 1.5 seconds
+const unsigned long sensorReadInterval = 2000; // 2 seconds
 
 // automatic_logic
 const int motorDuration = 10000; // 10 seconds motorDuration for motor operation

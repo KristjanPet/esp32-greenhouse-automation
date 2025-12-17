@@ -116,7 +116,7 @@ void tickMotion()
   if (motorState == MotorState::OPENING)
   {
     currentPercent += dt * movingRate;
-    if (fabs(currentPercent - lastPrintPercent) >= 1.0f)
+    if (fabs(currentPercent - lastPrintPercent) >= 5.0f)
     { // print only on 1% change
       Serial.printf("%.2f%%\n", currentPercent);
       lastPrintPercent = currentPercent;
@@ -129,7 +129,7 @@ void tickMotion()
   else if (motorState == MotorState::CLOSING)
   {
     currentPercent -= dt * movingRate;
-    if (fabs(currentPercent - lastPrintPercent) >= 1.0f)
+    if (fabs(currentPercent - lastPrintPercent) >= 5.0f)
     { // print only on 1% change
       Serial.printf("%.2f%%\n", currentPercent);
       lastPrintPercent = currentPercent;
