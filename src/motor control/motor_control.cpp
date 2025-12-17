@@ -14,6 +14,7 @@ static bool motorTimerActive = false;
 
 static float currentPercent = 69; // TEMP
 static float targetPercent = NAN;
+float eps = 0.5f; //offset
 
 uint32_t lastTs = 0;
 
@@ -90,22 +91,19 @@ void setPendingTrigger(Trigger t)
 
 void moveLogic()
 {
-  if (targetPercent > currentPercent && motorState == MotorState::STOPPED)
+  if (targetPercent - eps > currentPercent && motorState == MotorState::STOPPED)
   {
     motorGoUp();
-    Serial.println("motor up started");
   }
-  else if (targetPercent < currentPercent && motorState == MotorState::STOPPED)
+  else if (targetPercent + eps < currentPercent && motorState == MotorState::STOPPED)
   {
     motorGoDown();
-    Serial.println("motor down started");
   }
 }
 
 void tickMotion()
 {
   float movingRate = 100.0 / motorDuration; // % per ms
-  float eps = 0.5f;
   uint32_t now = millis();
   uint32_t dt = now - lastTs;
   lastTs = now;
@@ -121,7 +119,7 @@ void tickMotion()
       Serial.printf("%.2f%%\n", currentPercent);
       lastPrintPercent = currentPercent;
     }
-    if (currentPercent >= targetPercent - eps || currentPercent >= 100.0)
+    if (currentPercent >= targetPercent - eps || currentPercent + eps >= 100.0)
     {
       motorStop();
     }
@@ -134,7 +132,7 @@ void tickMotion()
       Serial.printf("%.2f%%\n", currentPercent);
       lastPrintPercent = currentPercent;
     }
-    if (currentPercent <= targetPercent + eps || currentPercent <= 0.0)
+    if (currentPercent <= targetPercent + eps || currentPercent - eps <= 0.0)
     {
       motorStop();
     }
