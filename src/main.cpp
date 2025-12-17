@@ -87,6 +87,7 @@ void loop()
     lastPrintTime = currentMillis;
 
     readTemperatureC();
+    readTemperature2C();
     updateWindSpeedBuffer(getWindSpeed());
 
     if (!manualIsActive())
