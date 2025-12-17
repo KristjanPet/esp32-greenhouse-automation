@@ -61,6 +61,7 @@ void setup()
     return;
   }
   loadThresholds();
+  loadCurrentState();
   setupTempSensor();
   setupTempSensor2();
   setupWindSensor();

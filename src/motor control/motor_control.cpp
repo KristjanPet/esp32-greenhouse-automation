@@ -1,5 +1,7 @@
 #include <Arduino.h>
 #include <cmath>
+#include <ArduinoJson.h>
+#include <SPIFFS.h>
 #include "motor_control.h"
 #include "../include/secrets.h"
 #include "logger.h"
@@ -12,7 +14,7 @@ static unsigned long motorTimerStart = 0;
 static unsigned long motorRunDuration = 0;
 static bool motorTimerActive = false;
 
-static float currentPercent = 69; // TEMP
+static float currentPercent = NAN; // TEMP
 static float targetPercent = NAN;
 float eps = 0.5f; //offset
 
@@ -72,6 +74,7 @@ void motorStop()
   }
 
   targetPercent = currentPercent;
+  saveCurrentState();
 }
 
 float getCurrentPercent()
@@ -139,6 +142,47 @@ void tickMotion()
   }
 
   currentPercent = constrain(currentPercent, 0.f, 100.f);
+}
+
+bool saveCurrentState()
+{
+  File file = SPIFFS.open("/state.json", "w");
+  if (!file) {
+    Serial.println("Failed to open state file for writing.");
+    return false;
+  }
+
+  DynamicJsonDocument doc(128);
+  doc["currentPercent"] = currentPercent;
+
+  bool ok = serializeJson(doc, file) > 0;
+  file.close();
+
+  if (!ok) Serial.println("Failed to write state.");
+  return ok;
+}
+
+bool loadCurrentState()
+{
+  if (!SPIFFS.exists("/state.json")) {
+    Serial.println("No state file found.");
+    return false;
+  }
+
+  File file = SPIFFS.open("/state.json", "r");
+  if (!file) return false;
+
+  DynamicJsonDocument doc(128);
+  auto err = deserializeJson(doc, file);
+  file.close();
+  if (err) return false;
+
+  float p = doc["currentPercent"] | NAN;
+  if (!isnan(p)) {
+    currentPercent = p;
+    targetPercent = p; // prevents immediate move on boot
+  }
+  return true;
 }
 
 void setMotorState(MotorState s) { motorState = s; }
