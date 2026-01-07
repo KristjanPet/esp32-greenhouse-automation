@@ -3,7 +3,7 @@
 
 #define WIND_SENSOR_PIN 34  // ADC1 channel
 
-const int WIND_BUFFER_SIZE = 120; // 1 minutes at 500ms intervals
+const int WIND_BUFFER_SIZE = 15; // 0.5 minutes at 2000ms intervals
 float windBuffer[WIND_BUFFER_SIZE];
 int windIndex = 0;
 int windCount = 0;
