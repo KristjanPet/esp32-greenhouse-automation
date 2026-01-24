@@ -166,6 +166,8 @@ bool loadCurrentState()
 {
   if (!SPIFFS.exists("/state.json")) {
     Serial.println("No state file found.");
+    currentPercent = 0;
+    targetPercent = 0;
     return false;
   }
 
