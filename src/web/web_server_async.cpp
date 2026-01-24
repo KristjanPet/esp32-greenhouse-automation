@@ -58,8 +58,8 @@ void setupWebServerAsync()
         // Status
         String motorStateString = motorStateStr();
         float currentMotorPercent = getCurrentPercent();
-        printf("Motor state string: %s\n", motorStateString.c_str());
-        printf("Motor percent: %f\n", currentMotorPercent);
+        // printf("Motor state string: %s\n", motorStateString.c_str());
+        // printf("Motor percent: %f\n", currentMotorPercent);
         doc["status"]["motorState"] = motorStateString;
         doc["status"]["motorPercent"] = currentMotorPercent;
 
@@ -119,7 +119,7 @@ void setupWebServerAsync()
       StaticJsonDocument<128> doc;
       if (deserializeJson(doc, data, len)) { request->send(400,"text/plain","Invalid JSON"); return; }
       const float dir = doc["direction"] | 0;
-      Serial.println(dir);
+      // Serial.println(dir);
       setPendingTrigger(Trigger::WEB);
       setTargetPercent(dir);
       request->send(200,"text/plain","ok"); });
@@ -128,7 +128,7 @@ void setupWebServerAsync()
   server.on("/api/logs", HTTP_GET, [](AsyncWebServerRequest *request)
             {
     String arr = readLogsJSON(100);
-    Serial.println("Logs JSON: " + arr);
+    // Serial.println("Logs JSON: " + arr);
     request->send(200, "application/json", arr); });
 
   server.onNotFound([](AsyncWebServerRequest *req)
