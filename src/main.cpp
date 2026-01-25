@@ -12,7 +12,6 @@
 #include "motor_control.h"
 #include "buttons_control.h"
 #include "web_server_async.h"
-#include <change_bus.h>
 
 #include "wind_sensor.h"
 
@@ -62,6 +61,7 @@ void setup()
     return;
   }
   loadThresholds();
+  loadCurrentState();
   setupTempSensor();
   setupTempSensor2();
   setupWindSensor();
@@ -70,7 +70,6 @@ void setup()
   manualInit();
   setupWebServerAsync();
   configTime(3600, 3600, "pool.ntp.org", "time.nist.gov"); // CET/CEST crude: 1h offset + DST 1h
-  // Better: use TZ string for Ljubljana:
   setenv("TZ", "CET-1CEST,M3.5.0/2,M10.5.0/3", 1);
   tzset();
   Serial.println("Setup complete.");
@@ -88,10 +87,9 @@ void loop()
   {
     lastPrintTime = currentMillis;
 
+    readTemperatureC();
+    readTemperature2C();
     updateWindSpeedBuffer(getWindSpeed());
-
-    updateSensorsCache();
-    updateStatusCache(manualIsActive(), motorStateStr());
 
     if (!manualIsActive())
     { // pause automation while any button is held

@@ -6,32 +6,33 @@
 
 DHT dht(DHTPIN, DHTTYPE);
 float lastTemp = -100; // default for failure
+float lastH = -1;
 
 void setupTempSensor()
 {
     dht.begin();
 }
 
-float getTemperatureC()
+void readTemperatureC()
 {
     float t = dht.readTemperature();
-    if (isnan(t))
-    {
-        return lastTemp; // fallback to last known value
-    }
-    else
+    if (!isnan(t))
     {
         lastTemp = t;
-        return t;
     }
+
+    float h = dht.readHumidity();
+    if (!isnan(h))
+    {
+        lastH = h;
+    }
+}
+
+float getTemperatureC(){
+    return lastTemp;
 }
 
 float getHumidity()
 {
-    float h = dht.readHumidity();
-    if (isnan(h))
-    {
-        return -1.0; // means invalid
-    }
-    return h;
+    return lastH;
 }

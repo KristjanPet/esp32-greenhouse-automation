@@ -11,6 +11,9 @@ void setTargetPercent(float p);
 float getCurrentPercent();
 void tickMotion();
 
+bool saveCurrentState();
+bool loadCurrentState();
+
 void setPendingTrigger(Trigger t);
 
 void setMotorState(MotorState s);

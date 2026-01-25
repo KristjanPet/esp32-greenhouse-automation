@@ -8,7 +8,6 @@
 #include "temp_sensor.h"
 #include "temp_sensor_2.h"
 #include "wind_sensor.h"
-#include <change_bus.h>
 
 extern Thresholds currentThresholds;
 extern String nowStr();
@@ -130,7 +129,6 @@ void logMove(Trigger trig)
   saveFullLog(doc);
 
   trimLogIfNeeded(200);
-  bumpLogsVersion();
   ssePushLogs();
 }
 

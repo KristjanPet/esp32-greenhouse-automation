@@ -1,5 +1,7 @@
 #include <Arduino.h>
 #include <cmath>
+#include <ArduinoJson.h>
+#include <SPIFFS.h>
 #include "motor_control.h"
 #include "../include/secrets.h"
 #include "logger.h"
@@ -12,8 +14,9 @@ static unsigned long motorTimerStart = 0;
 static unsigned long motorRunDuration = 0;
 static bool motorTimerActive = false;
 
-static float currentPercent = 69; // TEMP
+static float currentPercent = NAN; // TEMP
 static float targetPercent = NAN;
+float eps = 0.5f; //offset
 
 uint32_t lastTs = 0;
 
@@ -71,6 +74,7 @@ void motorStop()
   }
 
   targetPercent = currentPercent;
+  saveCurrentState();
 }
 
 float getCurrentPercent()
@@ -90,22 +94,19 @@ void setPendingTrigger(Trigger t)
 
 void moveLogic()
 {
-  if (targetPercent > currentPercent && motorState == MotorState::STOPPED)
+  if (targetPercent - eps > currentPercent && motorState == MotorState::STOPPED)
   {
     motorGoUp();
-    Serial.println("motor up started");
   }
-  else if (targetPercent < currentPercent && motorState == MotorState::STOPPED)
+  else if (targetPercent + eps < currentPercent && motorState == MotorState::STOPPED)
   {
     motorGoDown();
-    Serial.println("motor down started");
   }
 }
 
 void tickMotion()
 {
   float movingRate = 100.0 / motorDuration; // % per ms
-  float eps = 0.5f;
   uint32_t now = millis();
   uint32_t dt = now - lastTs;
   lastTs = now;
@@ -116,12 +117,12 @@ void tickMotion()
   if (motorState == MotorState::OPENING)
   {
     currentPercent += dt * movingRate;
-    if (fabs(currentPercent - lastPrintPercent) >= 1.0f)
-    { // print only on 1% change
-      Serial.printf("%.2f%%\n", currentPercent);
-      lastPrintPercent = currentPercent;
-    }
-    if (currentPercent >= targetPercent - eps || currentPercent >= 100.0)
+    // if (fabs(currentPercent - lastPrintPercent) >= 5.0f)
+    // { // print only on 1% change
+    //   Serial.printf("%.2f%%\n", currentPercent);
+    //   lastPrintPercent = currentPercent;
+    // }
+    if (currentPercent >= targetPercent - eps || currentPercent + eps >= 100.0)
     {
       motorStop();
     }
@@ -129,18 +130,61 @@ void tickMotion()
   else if (motorState == MotorState::CLOSING)
   {
     currentPercent -= dt * movingRate;
-    if (fabs(currentPercent - lastPrintPercent) >= 1.0f)
-    { // print only on 1% change
-      Serial.printf("%.2f%%\n", currentPercent);
-      lastPrintPercent = currentPercent;
-    }
-    if (currentPercent <= targetPercent + eps || currentPercent <= 0.0)
+    // if (fabs(currentPercent - lastPrintPercent) >= 5.0f)
+    // { // print only on 1% change
+    //   Serial.printf("%.2f%%\n", currentPercent);
+    //   lastPrintPercent = currentPercent;
+    // }
+    if (currentPercent <= targetPercent + eps || currentPercent - eps <= 0.0)
     {
       motorStop();
     }
   }
 
   currentPercent = constrain(currentPercent, 0.f, 100.f);
+}
+
+bool saveCurrentState()
+{
+  File file = SPIFFS.open("/state.json", "w");
+  if (!file) {
+    Serial.println("Failed to open state file for writing.");
+    return false;
+  }
+
+  DynamicJsonDocument doc(128);
+  doc["currentPercent"] = currentPercent;
+
+  bool ok = serializeJson(doc, file) > 0;
+  file.close();
+
+  if (!ok) Serial.println("Failed to write state.");
+  return ok;
+}
+
+bool loadCurrentState()
+{
+  if (!SPIFFS.exists("/state.json")) {
+    Serial.println("No state file found.");
+    currentPercent = 0;
+    targetPercent = 0;
+    return false;
+  }
+
+  File file = SPIFFS.open("/state.json", "r");
+  if (!file) return false;
+
+  DynamicJsonDocument doc(128);
+  auto err = deserializeJson(doc, file);
+  file.close();
+  if (err) return false;
+
+  float p = doc["currentPercent"] | NAN;
+  if (!isnan(p)) {
+    currentPercent = p;
+    targetPercent = p; // prevents immediate move on boot
+  }
+  return true;
 }
 
 void setMotorState(MotorState s) { motorState = s; }
