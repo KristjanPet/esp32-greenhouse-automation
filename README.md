@@ -31,14 +31,14 @@ An ESP32-based controller for automatic greenhouse ventilation using temperature
 | **Wind Sensor** (analog)    | GPIO 34 (A0)   | 0–5V scaled to 0–3.3V using 1.8k + 3.6k divider             |
 | **Relay Module** (4-channel)| GPIO 14, 26, 27     | **14** = Direction (SW1 & SW2), **27** = Motor 1 (SW3), **26** = Motor 2 (SW4)                       |
 | **ESP32 VIN** (power input) | 5V             | Connect from buck converter (24V → 5V)                                 |
-| **Manual buttons** (2x up/0/down)| GPIO 13, 14, 17, 18     | 13, 14 Motor 1 (up, down), 17, 18 Motor 2 (up, down), wired to GND (internal pull-ups)                       |
+| **Manual buttons** (2x up/0/down)| GPIO 13, 14, 17, 18     | 13, 14 Motor 1 (up, down), 17, 18 Motor 2 (up, down), wired to GND (internal pull-ups) + 220ohm resistor and 47nF capacitor                      |
 
 All modules share a common GND.
 
 ---
 
 ## 📐 System Schematic
-<img width="1190" height="845" alt="SCH_Main_1-P1_2025-12-02" src="https://github.com/user-attachments/assets/79e0fbdd-ec0a-4c37-b56c-702cf26bf52d" />
+<img width="1190" height="845" alt="SCH_Main_1-P1_2026-02-08 (1)" src="https://github.com/user-attachments/assets/9a0f50eb-3eea-428f-a2c2-06a3acc76f20" />
 
 ## 🧠 Program Architecture
 <img width="1118" height="894" alt="architecture" src="https://github.com/user-attachments/assets/e9a6e672-17f8-450c-9936-d92533b930a3" />
