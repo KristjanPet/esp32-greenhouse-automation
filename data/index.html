@@ -34,7 +34,7 @@
         </div>
 
         <div class="section">
-          <h2>Nastavitve pragov</h2>
+          <h2>Nastavitve</h2>
           <p>
             <label><input id="useTempOpen" type="checkbox" checked>Temp odpri: <input id="tempOpen" type="number" value="-1">&nbsp;&deg;C</label>
             <label><input id="useTempClose" type="checkbox" checked>Temp zapri: <input id="tempClose" type="number" value="-1">&nbsp;&deg;C</label>
@@ -43,7 +43,14 @@
             <label><input id="useWindClose" type="checkbox" checked>Veter zapri: <input id="windClose" type="number" value="-1">&nbsp;m/s</label>
             <label><input id="useWindReopen" type="checkbox" checked>Veter odpri: <input id="windReopen" type="number" value="-1">&nbsp;m/s</label>
           </p>
-          <button onclick="sendThresholds()">Shrani prage</button>
+          <h4 style="margin-top: 7px; margin-bottom: 7px;">Motori</h4>
+          <p style="margin-top: 7px; margin-bottom: 7px;">
+            <label style="display: inline-flex; gap: 20px;">
+              <span><input id="left" type="checkbox"> Levi</span>
+              <span><input id="right" type="checkbox"> Desni</span>
+            </label>
+          </p>
+          <button onclick="sendThresholds()">Shrani</button>
         </div>
 
         <div class="section">

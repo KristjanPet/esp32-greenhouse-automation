@@ -23,6 +23,9 @@ bool saveThresholds() {
   doc["useWindClose"] = currentThresholds.useWindClose;
   doc["useWindReopen"] = currentThresholds.useWindReopen;
 
+  doc["useLeftMotor"] = currentThresholds.useLeftMotor;
+  doc["useRightMotor"] = currentThresholds.useRightMotor;
+
   if (serializeJson(doc, file) == 0) {
     Serial.println("Failed to write thresholds to file.");
     file.close();
@@ -64,6 +67,9 @@ bool loadThresholds() {
   currentThresholds.useTempClose = doc["useTempClose"] | currentThresholds.useTempClose;
   currentThresholds.useWindClose = doc["useWindClose"] | currentThresholds.useWindClose;
   currentThresholds.useWindReopen = doc["useWindReopen"] | currentThresholds.useWindReopen;
+
+  currentThresholds.useLeftMotor = doc["useLeftMotor"] | currentThresholds.useLeftMotor;
+  currentThresholds.useRightMotor = doc["useRightMotor"] | currentThresholds.useRightMotor;
 
   Serial.println("Thresholds loaded from SPIFFS.");
   return true;

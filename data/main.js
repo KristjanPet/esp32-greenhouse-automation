@@ -87,6 +87,9 @@ function sendThresholds() {
     useTempClose: document.getElementById("useTempClose").checked,
     useWindClose: document.getElementById("useWindClose").checked,
     useWindReopen: document.getElementById("useWindReopen").checked,
+
+    useLeftMotor: document.getElementById("left").checked,
+    useRightMotor: document.getElementById("right").checked,
   };
 
   fetch("/api/thresholds", {
@@ -121,6 +124,9 @@ async function loadThresholds() {
     document.getElementById("useTempClose").checked = !!d.useTempClose;
     document.getElementById("useWindClose").checked = !!d.useWindClose;
     document.getElementById("useWindReopen").checked = !!d.useWindReopen;
+
+    document.getElementById("left").checked = !!d.useLeftMotor;
+    document.getElementById("right").checked = !!d.useRightMotor;
   } catch (e) {
     console.error("Error loading thresholds:", e);
   }

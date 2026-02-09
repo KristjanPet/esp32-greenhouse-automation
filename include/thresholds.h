@@ -11,6 +11,9 @@ struct Thresholds {
   bool useTempClose = true;
   bool useWindClose = true;
   bool useWindReopen = true;
+
+  bool useLeftMotor = true;
+  bool useRightMotor = true;
 };
 
 // Declare the global variable
