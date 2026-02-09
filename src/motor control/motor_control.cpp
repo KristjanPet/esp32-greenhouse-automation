@@ -5,6 +5,7 @@
 #include "motor_control.h"
 #include "../include/secrets.h"
 #include "logger.h"
+#include "thresholds.h"
 
 const int MOTOR_DIR_PIN = 14;      // Pin for motor direction (up/down)
 const int LEFT_MOTOR_ON_PIN = 26;  // Pin for left motor on/off
@@ -42,8 +43,8 @@ void motorGoUp()
   delay(100);
   digitalWrite(MOTOR_DIR_PIN, HIGH);
   delay(100);
-  digitalWrite(LEFT_MOTOR_ON_PIN, HIGH);
-  digitalWrite(RIGHT_MOTOR_ON_PIN, HIGH);
+  if( currentThresholds.useLeftMotor) digitalWrite(LEFT_MOTOR_ON_PIN, HIGH);
+  if( currentThresholds.useRightMotor) digitalWrite(RIGHT_MOTOR_ON_PIN, HIGH);
 }
 
 void motorGoDown()
@@ -55,8 +56,8 @@ void motorGoDown()
   delay(100);
   digitalWrite(MOTOR_DIR_PIN, LOW);
   delay(100);
-  digitalWrite(LEFT_MOTOR_ON_PIN, HIGH);
-  digitalWrite(RIGHT_MOTOR_ON_PIN, HIGH);
+  if( currentThresholds.useLeftMotor) digitalWrite(LEFT_MOTOR_ON_PIN, HIGH);
+  if( currentThresholds.useRightMotor) digitalWrite(RIGHT_MOTOR_ON_PIN, HIGH);
 }
 
 void motorStop()
