@@ -128,7 +128,7 @@ void logMove(Trigger trig)
 
   saveFullLog(doc);
 
-  trimLogIfNeeded(200);
+  trimLogIfNeeded(50);
   ssePushLogs();
 }
 
