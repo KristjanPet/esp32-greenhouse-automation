@@ -85,6 +85,9 @@ void setupWebServerAsync()
     doc["useWindClose"]  = currentThresholds.useWindClose;
     doc["useWindReopen"] = currentThresholds.useWindReopen;
 
+      doc["useLeftMotor"] = currentThresholds.useLeftMotor;
+      doc["useRightMotor"] = currentThresholds.useRightMotor;
+
     String out; serializeJson(doc, out);
     req->send(200, "application/json", out); });
 
@@ -107,6 +110,9 @@ void setupWebServerAsync()
       currentThresholds.useTempClose  = doc["useTempClose"]  | currentThresholds.useTempClose;
       currentThresholds.useWindClose  = doc["useWindClose"]  | currentThresholds.useWindClose;
       currentThresholds.useWindReopen = doc["useWindReopen"] | currentThresholds.useWindReopen;
+
+      currentThresholds.useLeftMotor = doc["useLeftMotor"] | currentThresholds.useLeftMotor;
+      currentThresholds.useRightMotor = doc["useRightMotor"] | currentThresholds.useRightMotor;
 
       saveThresholds(); // persist to SPIFFS if you added that earlier
 
