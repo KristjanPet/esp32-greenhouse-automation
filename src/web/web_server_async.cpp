@@ -65,7 +65,7 @@ void setupWebServerAsync()
 
         //logs
         JsonArray logArr = doc["logs"].to<JsonArray>();
-        appendLogsTo(logArr, 100);
+        appendLogsTo(logArr, 20);
 
         String out; 
         serializeJson(doc, out);
@@ -127,7 +127,7 @@ void setupWebServerAsync()
   // --- Logs fetch (still HTTP GET; you could also stream over SSE if you like)
   server.on("/api/logs", HTTP_GET, [](AsyncWebServerRequest *request)
             {
-    String arr = readLogsJSON(100);
+    String arr = readLogsJSON(20);
     // Serial.println("Logs JSON: " + arr);
     request->send(200, "application/json", arr); });
 
@@ -199,7 +199,7 @@ void sseUpdateStatus(bool manual, const char *motorState)
 // If you want to push logs to clients (e.g., after a new line is appended)
 void ssePushLogs()
 {
-  String arr = readLogsJSON(50);
+  String arr = readLogsJSON(20);
   // wrap as object so client can distinguish
   String out = String("{\"lines\":") + arr + "}";
   events.send(out.c_str(), "logs", millis()); // event: logs
