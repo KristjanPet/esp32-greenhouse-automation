@@ -8,8 +8,8 @@
 #include "thresholds.h"
 
 const int MOTOR_DIR_PIN = 14;      // Pin for motor direction (up/down)
-const int LEFT_MOTOR_ON_PIN = 26;  // Pin for left motor on/off
-const int RIGHT_MOTOR_ON_PIN = 27; // Pin for right motor on/off
+const int LEFT_MOTOR_ON_PIN = 27;  // Pin for left motor on/off
+const int RIGHT_MOTOR_ON_PIN = 26; // Pin for right motor on/off
 
 static unsigned long motorTimerStart = 0;
 static unsigned long motorRunDuration = 0;
