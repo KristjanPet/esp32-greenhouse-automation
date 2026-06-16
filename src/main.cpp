@@ -17,19 +17,18 @@
 
 unsigned long lastPrintTime = 0;
 
+const unsigned long wifiReconnectInterval = 10000;
+unsigned long lastWiFiReconnectAttempt = 0;
+bool wasWiFiConnected = false;
+bool otaReady = false;
+bool timeConfigured = false;
+
 void setupWiFi()
 {
-  Serial.print("Connecting to WiFi...");
+  Serial.println("Starting WiFi connection...");
+  WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-
-  while (WiFi.status() != WL_CONNECTED)
-  {
-    delay(500);
-    Serial.print(".");
-  }
-
-  Serial.println("\nWiFi connected!");
-  Serial.println("IP address: " + WiFi.localIP().toString());
+  lastWiFiReconnectAttempt = millis();
 }
 
 void setupOTA()
@@ -45,7 +44,59 @@ void setupOTA()
                { Serial.printf("Error[%u]: ", error); });
 
   ArduinoOTA.begin();
+  otaReady = true;
   Serial.println("OTA Ready");
+}
+
+void setupNetworkTime()
+{
+  configTime(3600, 3600, "pool.ntp.org", "time.nist.gov"); // CET/CEST crude: 1h offset + DST 1h
+  setenv("TZ", "CET-1CEST,M3.5.0/2,M10.5.0/3", 1);
+  tzset();
+  timeConfigured = true;
+  Serial.println("Network time configured.");
+}
+
+void maintainWiFi()
+{
+  const bool connected = WiFi.status() == WL_CONNECTED;
+  const unsigned long now = millis();
+
+  if (connected)
+  {
+    if (!wasWiFiConnected)
+    {
+      Serial.println("WiFi connected!");
+      Serial.println("IP address: " + WiFi.localIP().toString());
+      wasWiFiConnected = true;
+    }
+
+    if (!otaReady)
+    {
+      setupOTA();
+    }
+
+    if (!timeConfigured)
+    {
+      setupNetworkTime();
+    }
+
+    return;
+  }
+
+  if (wasWiFiConnected)
+  {
+    Serial.println("WiFi lost. Reconnecting in background...");
+    wasWiFiConnected = false;
+  }
+
+  if (now - lastWiFiReconnectAttempt >= wifiReconnectInterval)
+  {
+    Serial.println("Trying to reconnect to WiFi...");
+    WiFi.disconnect(false);
+    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+    lastWiFiReconnectAttempt = now;
+  }
 }
 
 void setup()
@@ -54,7 +105,6 @@ void setup()
   delay(1000);
 
   setupWiFi();
-  setupOTA();
   if (!SPIFFS.begin(true))
   {
     Serial.println("SPIFFS mount failed.");
@@ -69,9 +119,6 @@ void setup()
   setupMotorPins();
   manualInit();
   setupWebServerAsync();
-  configTime(3600, 3600, "pool.ntp.org", "time.nist.gov"); // CET/CEST crude: 1h offset + DST 1h
-  setenv("TZ", "CET-1CEST,M3.5.0/2,M10.5.0/3", 1);
-  tzset();
   Serial.println("Setup complete.");
 }
 
@@ -79,7 +126,13 @@ void loop()
 {
   unsigned long currentMillis = millis();
 
-  ArduinoOTA.handle();
+  maintainWiFi();
+
+  if (otaReady)
+  {
+    ArduinoOTA.handle();
+  }
+
   manualTick();
   tickMotion();
 
