@@ -38,7 +38,7 @@ All modules share a common GND.
 ---
 
 ## 📐 System Schematic
-<img width="1190" height="845" alt="SCH_Main_1-P1_2026-02-08 (1)" src="https://github.com/user-attachments/assets/9a0f50eb-3eea-428f-a2c2-06a3acc76f20" />
+<img width="1190" height="845" alt="SCH_Main_1-P1_2026-02-28" src="https://github.com/user-attachments/assets/84364f9a-ab05-4275-aa27-67a97340e421" />
 
 ## 🧠 Program Architecture
 <img width="1118" height="894" alt="architecture" src="https://github.com/user-attachments/assets/e9a6e672-17f8-450c-9936-d92533b930a3" />
