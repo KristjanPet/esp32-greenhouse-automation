@@ -7,6 +7,7 @@ An ESP32-based controller for automatic greenhouse ventilation using temperature
 
 ## 🔧 Main Features
 - ESP32 DevKit V1 with web interface & automation logic  
+- Non-blocking WiFi reconnect keeps local automation, sensors, and manual controls running while the ESP32 retries the network in the background
 - Average temperature & humidity from **DS18B20** + **DHT11**  
 - Average wind speed from 0–5V wind sensor (ADC + voltage divider)  
 - Two roll-up motors controlled via:
