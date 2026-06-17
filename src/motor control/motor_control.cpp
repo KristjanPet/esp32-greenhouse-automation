@@ -41,7 +41,7 @@ void motorGoUp()
   digitalWrite(LEFT_MOTOR_ON_PIN, LOW);
   digitalWrite(RIGHT_MOTOR_ON_PIN, LOW);
   delay(100);
-  digitalWrite(MOTOR_DIR_PIN, HIGH);
+  digitalWrite(MOTOR_DIR_PIN, LOW);
   delay(100);
   if( currentThresholds.useLeftMotor) digitalWrite(LEFT_MOTOR_ON_PIN, HIGH);
   if( currentThresholds.useRightMotor) digitalWrite(RIGHT_MOTOR_ON_PIN, HIGH);
@@ -54,7 +54,7 @@ void motorGoDown()
   digitalWrite(LEFT_MOTOR_ON_PIN, LOW);
   digitalWrite(RIGHT_MOTOR_ON_PIN, LOW);
   delay(100);
-  digitalWrite(MOTOR_DIR_PIN, LOW);
+  digitalWrite(MOTOR_DIR_PIN, HIGH);
   delay(100);
   if( currentThresholds.useLeftMotor) digitalWrite(LEFT_MOTOR_ON_PIN, HIGH);
   if( currentThresholds.useRightMotor) digitalWrite(RIGHT_MOTOR_ON_PIN, HIGH);
