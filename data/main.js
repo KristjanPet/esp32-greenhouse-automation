@@ -1,6 +1,14 @@
 const slider = document.getElementById("myRange");
 const btnRange = document.getElementById("btnRange");
 
+function formatSensorValue(value, digits = 1) {
+  return Number.isFinite(value) ? value.toFixed(digits) : "--";
+}
+
+function formatTemperature(value) {
+  return Number.isFinite(value) ? `${value.toFixed(1)} &deg;C` : "—";
+}
+
 async function initPage() {
   try {
     const res = await fetch("/api/init");
@@ -9,7 +17,9 @@ async function initPage() {
     // sensors
     document.getElementById("temp1").textContent = d.sensors.temp1.toFixed(1);
     document.getElementById("temp2").textContent = d.sensors.temp2.toFixed(1);
-    document.getElementById("avg").textContent = d.sensors.avg.toFixed(1);
+    document.getElementById("avg").textContent = formatSensorValue(
+      d.sensors.avg
+    );
     document.getElementById("humidity").textContent =
       d.sensors.humidity.toFixed(1);
     document.getElementById("wind").textContent = d.sensors.wind.toFixed(1);
@@ -45,7 +55,7 @@ function renderLogsToTable(entries) {
       <td>${e.state?.toFixed(0) + "%" ?? "—"}</td>
       <td>${e.sensors?.T?.toFixed(1) + " &deg;C" ?? "—"}</td>
       <td>${e.sensors?.T2?.toFixed(1) + " &deg;C" ?? "—"}</td>
-      <td>${e.sensors?.TAvg?.toFixed(1) + " &deg;C" ?? "—"}</td>
+      <td>${formatTemperature(e.sensors?.TAvg)}</td>
       <td>${e.sensors?.H?.toFixed(1) + "%" ?? "—"}</td>
       <td>${e.sensors?.W?.toFixed(1) + " m/s" ?? "—"}</td>
       <td class="${e.thresholds?.UseTOpen ? "active" : "inactive"}">${

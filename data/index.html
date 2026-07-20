@@ -82,7 +82,7 @@
             const d = JSON.parse(e.data);
             document.getElementById('temp1').textContent = d.temp1.toFixed(1);
             document.getElementById('temp2').textContent = d.temp2.toFixed(1);
-            document.getElementById('avg').textContent   = d.avg.toFixed(1);
+            document.getElementById('avg').textContent   = formatSensorValue(d.avg);
             document.getElementById('humidity').textContent = d.humidity.toFixed(1);
             document.getElementById('wind').textContent  = d.wind.toFixed(1);
           });
