@@ -7,6 +7,7 @@
 #include "web_server_async.h"
 #include "temp_sensor.h"
 #include "temp_sensor_2.h"
+#include "temperature_average.h"
 #include "wind_sensor.h"
 
 extern Thresholds currentThresholds;
@@ -94,7 +95,7 @@ void logMove(Trigger trig)
 {
   float temp = getTemperatureC();
   float temp2 = getTemperature2C();
-  float tempAvg = (temp + temp2) / 2.0f;
+  float tempAvg = getAverageTemperatureC();
   float hum = getHumidity();
   float wind = getAverageWindSpeed();
 
@@ -112,7 +113,10 @@ void logMove(Trigger trig)
   JsonObject sensors = o.createNestedObject("sensors");
   sensors["T"] = temp;
   sensors["T2"] = temp2;
-  sensors["TAvg"] = tempAvg;
+  if (isnan(tempAvg))
+    sensors["TAvg"] = nullptr;
+  else
+    sensors["TAvg"] = tempAvg;
   sensors["H"] = hum;
   sensors["W"] = wind;
 
