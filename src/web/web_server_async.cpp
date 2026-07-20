@@ -9,6 +9,7 @@
 #include "web_server_async.h"
 #include "temp_sensor.h"
 #include "temp_sensor_2.h"
+#include "temperature_average.h"
 #include "wind_sensor.h"
 #include "buttons_control.h"
 #include "thresholds.h"
@@ -51,7 +52,11 @@ void setupWebServerAsync()
         // Sensors
         doc["sensors"]["temp1"]    = getTemperatureC();
         doc["sensors"]["temp2"]    = getTemperature2C();
-        doc["sensors"]["avg"]      = (getTemperatureC() + getTemperature2C()) / 2.0;
+        float averageTemperature = getAverageTemperatureC();
+        if (isnan(averageTemperature))
+          doc["sensors"]["avg"] = nullptr;
+        else
+          doc["sensors"]["avg"] = averageTemperature;
         doc["sensors"]["humidity"] = getHumidity();
         doc["sensors"]["wind"]     = getAverageWindSpeed();
 
@@ -153,7 +158,7 @@ void sseUpdateSensors()
 
   float t1 = getTemperatureC();
   float t2 = getTemperature2C();
-  float avg = (t1 + t2) / 2.0;
+  float avg = getAverageTemperatureC();
   float hum = getHumidity();
   float wind = getAverageWindSpeed();
 
@@ -171,7 +176,10 @@ void sseUpdateSensors()
     StaticJsonDocument<192> doc;
     doc["temp1"] = t1;
     doc["temp2"] = t2;
-    doc["avg"] = avg;
+    if (isnan(avg))
+      doc["avg"] = nullptr;
+    else
+      doc["avg"] = avg;
     doc["humidity"] = hum;
     doc["wind"] = wind;
     String payload;
