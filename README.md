@@ -1,3 +1,8 @@
+> [!NOTE]
+> This is a proof-of-concept version of the project. Although physically working, a full revision is planned, including RTOS-based firmware, an external server/UI, optimized electronics and PCB design, improved UX, and new features such as automatic watering and greater user control.
+>
+> New ideas, improvements, and contributions are welcome.
+
 # 🌱 ESP32 Greenhouse Automation
 
 
